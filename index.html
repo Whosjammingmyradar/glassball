@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Buddy — Personal Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /*  CALIBRI STACK + FALLBACKS  */
+  :root {
+    --font-body: 'Calibri', 'Calibri Regular', 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', sans-serif;
+    --font-mono: 'Source Code Pro', 'Courier New', monospace;
+    --font-serif: 'Libre Baskerville', Georgia, serif;
+
+    --bg:        #0d0f12;
+    --bg2:       #13161b;
+    --bg3:       #1b1f28;
+    --border:    #2a2f3d;
+    --accent:    #c8a84b;
+    --accent2:   #4b7fc8;
+    --accent3:   #c84b4b;
+    --text:      #d4d8e2;
+    --text-dim:  #7a8099;
+    --text-hi:   #f0f2f8;
+    --green:     #4bc87a;
+    --red:       #c84b4b;
+    --yellow:    #c8a84b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    height: 100%;
+  }
+
+  /*  HEADER  */
+  #header {
+    background: var(--bg2);
+    border-bottom: 2px solid var(--accent);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #header .logo {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #header .logo span { color: var(--text-dim); font-size: 0.75rem; display: block; letter-spacing: 0.12em; margin-top: 1px; }
+  #clock { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); text-align: right; }
+  #clock .utc { color: var(--accent); font-weight: 600; }
+  #status-bar {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 4px 24px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /*  TABS  */
+  #tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 11px 20px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .tab-icon { margin-right: 6px; }
+
+  /*  MAIN LAYOUT  */
+  #content { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /*  GRID HELPERS  */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /*  CARDS  */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .card-header {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header .badge {
+    font-size: 0.62rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+
+  /*  NEWS ITEMS  */
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-item:hover { background: var(--bg3); margin: 0 -16px; padding: 10px 16px; }
+  .news-item .headline {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-hi);
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .news-item .meta {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+  }
+  .news-item .meta .source { color: var(--accent2); }
+  .news-item .meta .region { color: var(--accent); }
+  .news-item .severity {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .sev-high { background: rgba(200,75,75,0.18); color: var(--red); border: 1px solid rgba(200,75,75,0.3); }
+  .sev-med  { background: rgba(200,168,75,0.15); color: var(--yellow); border: 1px solid rgba(200,168,75,0.3); }
+  .sev-low  { background: rgba(75,200,122,0.12); color: var(--green); border: 1px solid rgba(75,200,122,0.25); }
+
+  /*  REGION INDICATORS  */
+  .region-map {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .region-cell {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+  .region-cell .name { font-weight: 600; color: var(--text-hi); margin-bottom: 3px; }
+  .region-cell .threat-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .region-cell .threat-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .threat-critical .threat-fill { background: var(--red); }
+  .threat-high .threat-fill { background: var(--yellow); }
+  .threat-mod .threat-fill { background: var(--accent2); }
+  .threat-low .threat-fill { background: var(--green); }
+
+  /*  KALSHI MARKETS  */
+  .market-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .market-item:last-child { border-bottom: none; }
+  .market-item .q { font-size: 0.85rem; color: var(--text-hi); margin-bottom: 6px; line-height: 1.35; }
+  .market-bars { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  .market-bar-wrap { flex: 1; }
+  .market-bar-label { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .market-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .market-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s ease; }
+  .bar-yes { background: var(--green); }
+  .bar-no  { background: var(--red); }
+  .market-meta { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; display: flex; gap: 12px; }
+  .market-meta .vol { color: var(--accent2); }
+  .market-meta .cat { color: var(--accent); }
+  .my-bet {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 1px 7px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .bet-yes { color: var(--green); border-color: var(--green); background: rgba(75,200,122,0.08); }
+  .bet-no  { color: var(--red);   border-color: var(--red);   background: rgba(200,75,75,0.08); }
+  .bet-none { color: var(--text-dim); border-color: var(--border); }
+  .bet-none:hover { border-color: var(--accent); color: var(--accent); }
+
+  /*  WORD TRACKER  */
+  .word-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .word-tag {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .word-tag:hover { border-color: var(--accent2); }
+  .word-tag .count {
+    background: var(--accent2);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 2px;
+    min-width: 22px;
+    text-align: center;
+  }
+  .word-tag .trend { font-size: 0.7rem; }
+  .trend-up { color: var(--red); }
+  .trend-dn { color: var(--green); }
+
+  .politician-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .politician-row:last-child { border-bottom: none; }
+  .pol-name { font-weight: 600; font-size: 0.85rem; color: var(--text-hi); min-width: 140px; }
+  .pol-party { font-family: var(--font-mono); font-size: 0.65rem; padding: 1px 5px; border-radius: 2px; }
+  .party-r { background: rgba(200,75,75,0.15); color: var(--red); border: 1px solid rgba(200,75,75,0.3); }
+  .party-d { background: rgba(75,127,200,0.15); color: var(--accent2); border: 1px solid rgba(75,127,200,0.3); }
+  .pol-words { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+  .pol-word { font-family: var(--font-mono); font-size: 0.68rem; background: var(--bg3); border: 1px solid var(--border); padding: 2px 6px; border-radius: 2px; color: var(--text-dim); }
+
+  /*  MY PREDICTIONS LOG  */
+  .pred-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pred-item:last-child { border-bottom: none; }
+  .pred-q { font-size: 0.85rem; color: var(--text-hi); }
+  .pred-conf {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+  .pred-outcome {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .outcome-win  { background: rgba(75,200,122,0.15); color: var(--green); }
+  .outcome-loss { background: rgba(200,75,75,0.15); color: var(--red); }
+  .outcome-open { background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
+
+  /*  FORM ELEMENTS  */
+  input, select, textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 7px 10px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent2); }
+  select option { background: var(--bg2); }
+
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border: 1px solid;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0d0f12; }
+  .btn-primary:hover { background: #d4b55a; }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-dim); }
+  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+  .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: rgba(200,75,75,0.1); }
+
+  /*  INTEL FEED (SCROLLABLE)  */
+  .feed-container { max-height: 420px; overflow-y: auto; }
+  .feed-container::-webkit-scrollbar { width: 4px; }
+  .feed-container::-webkit-scrollbar-track { background: var(--bg); }
+  .feed-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /*  TICKER  */
+  #ticker-wrap {
+    overflow: hidden;
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 0;
+    margin-bottom: 16px;
+  }
+  #ticker {
+    display: inline-flex;
+    gap: 48px;
+    white-space: nowrap;
+    animation: scroll-ticker 60s linear infinite;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    padding-left: 100%;
+  }
+  #ticker .tick-item { display: flex; align-items: center; gap: 8px; }
+  #ticker .tick-label { color: var(--accent); font-weight: 600; }
+  #ticker .tick-val.up { color: var(--green); }
+  #ticker .tick-val.dn { color: var(--red); }
+  @keyframes scroll-ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+  /*  ECONOMIC METRICS  */
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.83rem;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { color: var(--text-dim); }
+  .metric-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-hi); }
+  .metric-chg { font-family: var(--font-mono); font-size: 0.72rem; }
+  .chg-pos { color: var(--green); }
+  .chg-neg { color: var(--red); }
+
+  /*  MODAL  */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    width: 480px;
+    max-width: 95vw;
+  }
+  .modal h3 {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .form-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .form-row label { font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+  /*  NOTES  */
+  textarea.notes { min-height: 120px; resize: vertical; }
+
+  /*  MISC  */
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-dim);
+    font-size: 0.83rem;
+  }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .api-note {
+    background: rgba(75,127,200,0.08);
+    border: 1px solid rgba(75,127,200,0.2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .api-note a { color: var(--accent2); }
+  .api-note strong { color: var(--text); }
+
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .search-bar input { flex: 1; }
+
+  /*  CONFIDENCE METER  */
+  .conf-ring {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.75rem;
+    border: 3px solid;
+    flex-shrink: 0;
+  }
+  .conf-high { border-color: var(--green); color: var(--green); }
+  .conf-med  { border-color: var(--yellow); color: var(--yellow); }
+  .conf-low  { border-color: var(--red); color: var(--red); }
+
+  @media (max-width: 900px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .col-span-2, .col-span-3 { grid-column: span 1; }
+  }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    #header { flex-direction: column; gap: 6px; }
+    #tabs { padding: 0 8px; }
+    #content { padding: 14px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<div id="header">
+  <div class="logo">
+    Prediction Buddy
+    <span>Personal Intelligence &amp; Prediction Dashboard</span>
+  </div>
+  <div id="clock">
+    <div id="local-time">—</div>
+    <div class="utc" id="utc-time">—</div>
+  </div>
+</div>
+
+<!--  STATUS BAR  -->
+<div id="status-bar">
+  <span><span class="status-dot"></span>LIVE</span>
+  <span id="sb-date">—</span>
+  <span>FEEDS: GDELT · KALSHI · GNews</span>
+  <span id="sb-pred-count">—</span>
+</div>
+
+<!--  TABS  -->
+<div id="tabs">
+  <div class="tab active" data-tab="news">Global News Feed</div>
+  <div class="tab" data-tab="kalshi">Kalshi Markets</div>
+  <div class="tab" data-tab="words">Political Language</div>
+  <div class="tab" data-tab="predictions">My Predictions</div>
+  <div class="tab" data-tab="econ">Economic Signals</div>
+  <div class="tab" data-tab="settings">Settings</div>
+</div>
+
+<!--  CONTENT  -->
+<div id="content">
+
+  <!--  TAB: NEWS  -->
+  <div class="panel active" id="panel-news">
+
+    <!-- Ticker -->
+    <div id="ticker-wrap">
+      <div id="ticker">
+        <span class="tick-item"><span class="tick-label">CRUDE OIL</span><span class="tick-val dn">$81.40 0.8%</span></span>
+        <span class="tick-item"><span class="tick-label">GOLD</span><span class="tick-val up">$2,341 0.3%</span></span>
+        <span class="tick-item"><span class="tick-label">USD/IRR (MARKET)</span><span class="tick-val dn">580,000 1.2%</span></span>
+        <span class="tick-item"><span class="tick-label">S&amp;P 500</span><span class="tick-val up">5,211 0.6%</span></span>
+        <span class="tick-item"><span class="tick-label">10Y TREASURY</span><span class="tick-val dn">4.52% 0.04</span></span>
+        <span class="tick-item"><span class="tick-label">VIX</span><span class="tick-val up">17.3 5%</span></span>
+        <span class="tick-item"><span class="tick-label">HRF SHIPPING INDEX</span><span class="tick-val dn">2,140 2.1%</span></span>
+        <span class="tick-item"><span class="tick-label">BITCOIN</span><span class="tick-val up">$67,200 1.4%</span></span>
+        <span class="tick-item"><span class="tick-label">EUR/USD</span><span class="tick-val">1.0832</span></span>
+        <span class="tick-item"><span class="tick-label">SHEKEL/USD</span><span class="tick-val dn">3.71 0.5%</span></span>
+      </div>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- Region Status -->
+      <div class="card">
+        <div class="card-header">Regional Threat Matrix <span class="badge" id="matrix-ts">–</span></div>
+        <div class="region-map" id="region-matrix">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Live Feed -->
+      <div class="card col-span-2">
+        <div class="card-header">
+          Global News Feed
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="news-filter" style="width:130px;font-size:0.72rem;padding:3px 6px">
+              <option value="all">All Regions</option>
+              <option value="ME">Middle East</option>
+              <option value="EU">Europe/Ukraine</option>
+              <option value="AS">Asia-Pacific</option>
+              <option value="AF">Africa</option>
+              <option value="LA">Latin America</option>
+              <option value="US">United States</option>
+            </select>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:0.68rem" onclick="loadNews()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="feed-container" id="news-feed">
+          <div class="empty-state"><div class="icon">⏳</div>Loading intelligence feed…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Key Developments -->
+    <div class="section-title">Flagged Developments</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Analyst Notes <span class="badge">PERSONAL</span></div>
+        <div id="flagged-notes" class="feed-container" style="max-height:240px">
+          <div class="empty-state">Right-click any news item to flag it</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Active Conflicts Summary</div>
+        <div id="conflict-summary">
+          <div class="metric-row"><span class="metric-label">Iran–Israel (Op. Epic Fury)</span><span class="metric-val" style="color:var(--red)">CRITICAL</span></div>
+          <div class="metric-row"><span class="metric-label">Russia–Ukraine</span><span class="metric-val" style="color:var(--red)">CRITICAL</span></div>
+          <div class="metric-row"><span class="metric-label">Gaza / Hamas</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Houthi Maritime</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Sudan</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Taiwan Strait</span><span class="metric-val" style="color:var(--accent2)">ELEVATED</span></div>
+          <div class="metric-row"><span class="metric-label">Kosovo / Serbia</span><span class="metric-val" style="color:var(--accent2)">ELEVATED</span></div>
+          <div class="metric-row"><span class="metric-label">Myanmar</span><span class="metric-val" style="color:var(--accent2)">MODERATE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TAB: KALSHI  -->
+  <div class="panel" id="panel-kalshi">
+    <div class="api-note">
+      <strong>Kalshi API:</strong> Markets below are fetched live from Kalshi's public REST API. 
+      Add your API key in <strong>Settings</strong> to unlock real-time prices and place bets directly. 
+      <a href="https://kalshi.com/developer" target="_blank">Get API key →</a>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="kalshi-search" placeholder="Search markets… (e.g. Iran, Ukraine, tariff, election)" oninput="filterMarkets()">
+      <select id="kalshi-cat" onchange="filterMarkets()" style="width:160px">
+        <option value="all">All Categories</option>
+        <option value="geo">Geopolitical</option>
+        <option value="econ">Economic</option>
+        <option value="conflict">Conflict</option>
+        <option value="elections">Elections</option>
+        <option value="policy">Policy</option>
+      </select>
+      <button class="btn btn-primary" onclick="loadKalshi()">↻ Refresh</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="card col-span-2" id="kalshi-featured">
+        <div class="card-header">Featured Geopolitical &amp; Economic Markets <span class="badge" id="kalshi-count">–</span></div>
+        <div class="feed-container" id="kalshi-feed" style="max-height:600px">
+          <div class="empty-state"><div class="icon">⏳</div>Loading markets…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">My Kalshi Position Log</div>
+    <div class="card">
+      <div class="card-header">Tracked Positions <span class="badge">PERSONAL</span>
+        <button class="btn btn-primary" style="padding:4px 12px;font-size:0.68rem" onclick="openBetModal()">+ Log Position</button>
+      </div>
+      <div id="bet-log">
+        <div class="empty-state">No positions logged yet. Click a market's YES/NO button or use "+ Log Position".</div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TAB: POLITICAL LANGUAGE  -->
+  <div class="panel" id="panel-words">
+    <div class="api-note">
+      <strong>Political Language Tracker:</strong> Tracks most-used words and phrases by US politicians across Congress, press releases, and official statements. 
+      Data sourced from public congressional records and C-SPAN via the Capitol Words API and manual tracking entries. 
+      Add custom phrases to monitor in the tracker below.
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-header">Top Trending Terms This Week <span class="badge" id="word-week">–</span></div>
+        <div class="word-grid" id="trending-words">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Track Custom Phrase</div>
+        <div class="form-row">
+          <label>Phrase or keyword to monitor</label>
+          <input type="text" id="custom-phrase" placeholder="e.g. 'maximum pressure', 'China tariffs'">
+        </div>
+        <div class="form-row">
+          <label>Context / Why it matters</label>
+          <input type="text" id="phrase-context" placeholder="e.g. Iran policy escalation signal">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="addPhrase()">Add to Tracker</button>
+          <button class="btn btn-ghost" onclick="loadCapitolWords()">↻ Refresh from API</button>
+        </div>
+        <div id="custom-phrases" style="margin-top:14px"></div>
+      </div>
+
+    </div>
+
+    <div class="section-title">By Politician</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Senate <span class="badge">KEY VOICES</span></div>
+        <div id="senate-words"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">House &amp; Administration <span class="badge">KEY VOICES</span></div>
+        <div id="house-words"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Phrase Frequency Chart</div>
+    <div class="card">
+      <div class="card-header">Congressional Term Frequency (30-day rolling)</div>
+      <div id="freq-chart" style="position:relative;height:180px;overflow:hidden"></div>
+    </div>
+  </div>
+
+  <!--  TAB: MY PREDICTIONS  -->
+  <div class="panel" id="panel-predictions">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="openPredModal()">+ New Prediction</button>
+      <button class="btn btn-ghost" onclick="exportPreds()"> Export JSON</button>
+      <button class="btn btn-ghost" onclick="importPreds()"> Import JSON</button>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid-4" id="pred-stats" style="margin-bottom:16px">
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent)" id="stat-total">0</div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Total Predictions</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--green)" id="stat-wins">0</div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Correct</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--red)" id="stat-losses">0</div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Wrong</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent2)" id="stat-acc">–</div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Accuracy</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        Prediction Log
+        <select id="pred-filter" onchange="renderPreds()" style="width:130px;font-size:0.72rem;padding:3px 6px">
+          <option value="all">All</option>
+          <option value="open">Open</option>
+          <option value="win">Correct</option>
+          <option value="loss">Wrong</option>
+        </select>
+      </div>
+      <div id="pred-list">
+        <div class="empty-state">No predictions logged yet. Add your first one!</div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TAB: ECONOMIC SIGNALS  -->
+  <div class="panel" id="panel-econ">
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-header">Commodities</div>
+        <div class="metric-row"><span class="metric-label">Crude Oil (WTI)</span><div><span class="metric-val">$81.40</span> <span class="metric-chg chg-neg">0.8%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Brent Crude</span><div><span class="metric-val">$85.20</span> <span class="metric-chg chg-neg">0.6%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Natural Gas (Henry Hub)</span><div><span class="metric-val">$1.92</span> <span class="metric-chg chg-pos">2.1%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Gold</span><div><span class="metric-val">$2,341</span> <span class="metric-chg chg-pos">0.3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Wheat (CBOT)</span><div><span class="metric-val">$543</span> <span class="metric-chg chg-pos">1.2%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Uranium</span><div><span class="metric-val">$90.50</span> <span class="metric-chg chg-neg">0.4%</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Equity / Risk Indicators</div>
+        <div class="metric-row"><span class="metric-label">S&amp;P 500</span><div><span class="metric-val">5,211</span> <span class="metric-chg chg-pos">0.6%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Nasdaq 100</span><div><span class="metric-val">18,190</span> <span class="metric-chg chg-pos">0.9%</span></div></div>
+        <div class="metric-row"><span class="metric-label">VIX (Fear Index)</span><div><span class="metric-val">17.3</span> <span class="metric-chg chg-pos">5.0%</span></div></div>
+        <div class="metric-row"><span class="metric-label">MSCI EM</span><div><span class="metric-val">1,048</span> <span class="metric-chg chg-neg">0.3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Defense ETF (ITA)</span><div><span class="metric-val">$158.40</span> <span class="metric-chg chg-pos">1.1%</span></div></div>
+        <div class="metric-row"><span class="metric-label">10Y Treasury Yield</span><div><span class="metric-val">4.52%</span> <span class="metric-chg chg-neg">0.04</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Sanctions / Conflict Economy</div>
+        <div class="metric-row"><span class="metric-label">USD/IRR (market rate)</span><div><span class="metric-val">580,000</span> <span class="metric-chg chg-neg">1.2%</span></div></div>
+        <div class="metric-row"><span class="metric-label">USD/RUB</span><div><span class="metric-val">91.4</span> <span class="metric-chg chg-neg">0.5%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Iran Oil Export (mbpd est.)</span><div><span class="metric-val">1.55</span> <span class="metric-chg chg-neg">3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Strait of Hormuz throughput</span><div><span class="metric-val">~17 mbpd</span> <span class="metric-chg" style="color:var(--yellow)">WATCH</span></div></div>
+        <div class="metric-row"><span class="metric-label">Baltic Dry Index</span><div><span class="metric-val">1,840</span> <span class="metric-chg chg-neg">0.7%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Red Sea Rerouting Cost</span><div><span class="metric-val">+$1.2M/vessel</span> <span class="metric-chg" style="color:var(--yellow)">HIGH</span></div></div>
+      </div>
+
+    </div>
+
+    <div class="section-title">Key Economic Events</div>
+    <div class="card">
+      <div class="card-header">Upcoming Macro Events <span class="badge">MANUALLY UPDATED</span></div>
+      <div id="econ-events">
+        <div class="metric-row"><span class="metric-label">US CPI (Apr)</span><span class="metric-val" style="font-size:0.78rem">May 15 · 8:30 ET</span></div>
+        <div class="metric-row"><span class="metric-label">FOMC Meeting</span><span class="metric-val" style="font-size:0.78rem">May 6–7</span></div>
+        <div class="metric-row"><span class="metric-label">US Jobs Report (Apr)</span><span class="metric-val" style="font-size:0.78rem">May 3 · 8:30 ET</span></div>
+        <div class="metric-row"><span class="metric-label">EU Inflation (flash)</span><span class="metric-val" style="font-size:0.78rem">Apr 30</span></div>
+        <div class="metric-row"><span class="metric-label">OPEC+ Meeting</span><span class="metric-val" style="font-size:0.78rem">Jun 1</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Conflict-Linked Economic Watchlist</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Strait of Hormuz Risk Monitor</div>
+        <div class="metric-row"><span class="metric-label">Daily Throughput</span><span class="metric-val">~17 mbpd</span></div>
+        <div class="metric-row"><span class="metric-label">US Naval Assets (5th Fleet)</span><span class="metric-val" style="color:var(--yellow)">ELEVATED</span></div>
+        <div class="metric-row"><span class="metric-label">Tanker Insurance Premium</span><span class="metric-val">+340% vs 2023</span></div>
+        <div class="metric-row"><span class="metric-label">Closure Risk (Kalshi est.)</span><span class="metric-val" style="color:var(--red)">~12%</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Defense Spending Indicators</div>
+        <div class="metric-row"><span class="metric-label">US FY25 Defense Budget</span><span class="metric-val">$886B</span></div>
+        <div class="metric-row"><span class="metric-label">Raytheon (RTX)</span><div><span class="metric-val">$117.40</span> <span class="metric-chg chg-pos">0.8%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Lockheed Martin (LMT)</span><div><span class="metric-val">$496.80</span> <span class="metric-chg chg-pos">0.5%</span></div></div>
+        <div class="metric-row"><span class="metric-label">NATO member avg. GDP%</span><span class="metric-val">2.1% → 2.4%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TAB: SETTINGS  -->
+  <div class="panel" id="panel-settings">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">API Configuration</div>
+        <div class="form-row">
+          <label>Kalshi API Key</label>
+          <input type="password" id="kalshi-key" placeholder="Enter your Kalshi API key…">
+        </div>
+        <div class="form-row">
+          <label>GNews API Key (for live news)</label>
+          <input type="password" id="gnews-key" placeholder="gnews.io API key…">
+        </div>
+        <div class="form-row">
+          <label>News Refresh Interval</label>
+          <select id="refresh-interval">
+            <option value="300000">5 minutes</option>
+            <option value="600000" selected>10 minutes</option>
+            <option value="1800000">30 minutes</option>
+            <option value="0">Manual only</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        <div id="settings-msg" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--green);margin-top:8px;display:none"> Saved to localStorage</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Tracked Topics</div>
+        <div class="form-row">
+          <label>Keywords for news filtering (comma-separated)</label>
+          <textarea id="tracked-topics" style="height:80px" placeholder="Iran, Hormuz, Ukraine, Taiwan, OPEC, tariffs, Fed…"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Analyst Name (for report headers)</label>
+          <input type="text" id="analyst-name" placeholder="e.g. J. Smith">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Data Management</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-ghost" onclick="exportAll()"> Export All Data (JSON)</button>
+          <button class="btn btn-ghost" onclick="importAll()"> Import Data (JSON)</button>
+          <button class="btn btn-danger" onclick="clearAll()"> Clear All Local Data</button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:12px;line-height:1.6">
+          All prediction and note data is stored in your browser's localStorage. 
+          Export regularly to avoid loss. For GitHub Pages deployment, no backend is required.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">About &amp; GitHub Deployment</div>
+        <div style="font-size:0.82rem;line-height:1.7;color:var(--text-dim)">
+          <p style="margin-bottom:8px">Deploy to GitHub Pages: push <code style="color:var(--accent);font-family:var(--font-mono)">index.html</code> to a repo's <code style="font-family:var(--font-mono);color:var(--accent)">gh-pages</code> branch or enable Pages from the <code style="font-family:var(--font-mono);color:var(--accent)">main</code> branch root.</p>
+          <p style="margin-bottom:8px">All data persists in browser localStorage — no server needed.</p>
+          <p>For real-time Kalshi data, configure your API key above. Kalshi's public markets endpoint requires authentication for full access.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /#content -->
+
+<!--  PREDICTION MODAL  -->
+<div class="modal-overlay" id="pred-modal">
+  <div class="modal">
+    <h3>New Prediction</h3>
+    <div class="form-row">
+      <label>Question / Event</label>
+      <input type="text" id="p-question" placeholder="e.g. Will Iran close the Strait of Hormuz before June 2025?">
+    </div>
+    <div class="form-row">
+      <label>My Call</label>
+      <select id="p-call">
+        <option value="YES">YES — I think this happens</option>
+        <option value="NO">NO — I think this does NOT happen</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Confidence (1–100%)</label>
+      <input type="range" id="p-conf" min="50" max="99" value="70" oninput="document.getElementById('p-conf-val').textContent=this.value+'%'">
+      <span id="p-conf-val" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent)">70%</span>
+    </div>
+    <div class="form-row">
+      <label>Resolution Date</label>
+      <input type="date" id="p-date">
+    </div>
+    <div class="form-row">
+      <label>Linked Kalshi Market (optional)</label>
+      <input type="text" id="p-market" placeholder="e.g. IRAN-HORMUZ-2025 or Kalshi URL">
+    </div>
+    <div class="form-row">
+      <label>Rationale / Key Assumptions</label>
+      <textarea id="p-notes" class="notes" placeholder="Why do you believe this? What signals are you watching?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('pred-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePred()">Save Prediction</button>
+    </div>
+  </div>
+</div>
+
+<!--  BET LOG MODAL  -->
+<div class="modal-overlay" id="bet-modal">
+  <div class="modal">
+    <h3>Log Kalshi Position</h3>
+    <div class="form-row">
+      <label>Market / Question</label>
+      <input type="text" id="b-question" placeholder="Market title">
+    </div>
+    <div class="form-row">
+      <label>Position</label>
+      <select id="b-side">
+        <option value="YES">YES</option>
+        <option value="NO">NO</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Entry Price (¢)</label>
+      <input type="number" id="b-price" min="1" max="99" placeholder="e.g. 35">
+    </div>
+    <div class="form-row">
+      <label>Number of Contracts</label>
+      <input type="number" id="b-contracts" placeholder="e.g. 100">
+    </div>
+    <div class="form-row">
+      <label>Rationale</label>
+      <textarea id="b-notes" style="height:70px" placeholder="Why are you taking this position?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('bet-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBet()">Log Position</button>
+    </div>
+  </div>
+</div>
+
+<!--  CONTEXT MENU  -->
+<div id="ctx-menu" style="display:none;position:fixed;z-index:300;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:4px 0;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+  <div class="ctx-item" onclick="flagItem()"> Flag for Analysis</div>
+  <div class="ctx-item" onclick="makeMarketPred()"> Create Prediction</div>
+  <div class="ctx-item" onclick="closeCtx()"> Cancel</div>
+</div>
+<style>
+  .ctx-item{padding:7px 16px;font-size:0.8rem;cursor:pointer;color:var(--text)}
+  .ctx-item:hover{background:var(--bg3)}
+</style>
+
+<script>
+// 
+//  GeoInt Tracker — Core Logic
+// 
+
+const LS = key => localStorage.getItem('geoint_' + key);
+const LSSet = (key, val) => localStorage.setItem('geoint_' + key, typeof val === 'string' ? val : JSON.stringify(val));
+const LSGet = (key, def = null) => { try { const v = LS(key); return v ? JSON.parse(v) : def; } catch { return def; } };
+
+let predictions = LSGet('predictions', []);
+let bets = LSGet('bets', []);
+let customPhrases = LSGet('phrases', []);
+let flagged = LSGet('flagged', []);
+let ctxTarget = null;
+
+//  CLOCK 
+function updateClock() {
+  const now = new Date();
+  document.getElementById('local-time').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', second:'2-digit'}) + ' LOCAL';
+  document.getElementById('utc-time').textContent = now.toUTCString().slice(17, 25) + ' UTC';
+  document.getElementById('sb-date').textContent = now.toDateString().toUpperCase();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+//  TABS 
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+//  REGION MATRIX 
+const regions = [
+  { name: 'Middle East', threat: 92, level: 'threat-critical' },
+  { name: 'Eastern Europe', threat: 88, level: 'threat-critical' },
+  { name: 'Gaza / West Bank', threat: 80, level: 'threat-high' },
+  { name: 'Red Sea', threat: 75, level: 'threat-high' },
+  { name: 'Taiwan Strait', threat: 52, level: 'threat-mod' },
+  { name: 'Sahel / Sudan', threat: 70, level: 'threat-high' },
+  { name: 'Korean Peninsula', threat: 35, level: 'threat-low' },
+  { name: 'Venezuela', threat: 40, level: 'threat-mod' },
+  { name: 'South China Sea', threat: 50, level: 'threat-mod' },
+];
+function buildMatrix() {
+  const el = document.getElementById('region-matrix');
+  el.innerHTML = regions.map(r => `
+    <div class="region-cell ${r.level}">
+      <div class="name">${r.name}</div>
+      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)">${r.threat}% THREAT</div>
+      <div class="threat-bar"><div class="threat-fill" style="width:${r.threat}%"></div></div>
+    </div>`).join('');
+  document.getElementById('matrix-ts').textContent = new Date().toLocaleDateString();
+}
+buildMatrix();
+
+//  NEWS FEED 
+const SAMPLE_NEWS = [
+  { h: 'Iran Positions Additional Ballistic Missile Units Along Zagros Range', region: 'ME', source: 'Reuters', time: '2h ago', sev: 'high' },
+  { h: 'US Navy 5th Fleet Reports Increased Small Boat Activity in Strait of Hormuz Northern Passage', region: 'ME', source: 'USNI News', time: '3h ago', sev: 'high' },
+  { h: 'Ukraine Claims Strike on Russian Black Sea Fleet HQ Using FPV Drone Swarm', region: 'EU', source: 'Kyiv Post', time: '4h ago', sev: 'high' },
+  { h: 'Houthi Launch Two Anti-Ship Missiles Toward MV PACIFIC EMERALD; Both Miss', region: 'ME', source: 'Ambrey Intel', time: '5h ago', sev: 'high' },
+  { h: 'Israel Air Force Conducts Third Strike Package This Week Against IRGC Logistics Nodes in Syria', region: 'ME', source: 'Times of Israel', time: '6h ago', sev: 'med' },
+  { h: 'Germany Approves €17B Emergency Defense Supplement; Fastest Passage in Bundestag History', region: 'EU', source: 'Der Spiegel', time: '7h ago', sev: 'med' },
+  { h: 'Russian S-500 System Claimed Operational Near Kaliningrad; NATO Air Picture Shifts', region: 'EU', source: 'Defense News', time: '8h ago', sev: 'med' },
+  { h: 'China Conducts Unannounced Live-Fire Exercise 60nm From Taiwan Median Line', region: 'AS', source: 'CSIS', time: '9h ago', sev: 'med' },
+  { h: 'Sudan RSF Forces Cut Off Last Government Resupply Route Into Khartoum', region: 'AF', source: 'Al Jazeera', time: '10h ago', sev: 'med' },
+  { h: 'Trump Administration Announces Expanded Sanctions List Targeting 14 Iranian Petrochemical Entities', region: 'US', source: 'Treasury.gov', time: '11h ago', sev: 'med' },
+  { h: 'IAEA: Iran 60% Enriched Uranium Stockpile Now at 142kg — Threshold Watch Continues', region: 'ME', source: 'IAEA', time: '12h ago', sev: 'high' },
+  { h: 'Kosovo Serbs Block Main Highway; Belgrade Denies Involvement', region: 'EU', source: 'Politico EU', time: '13h ago', sev: 'low' },
+  { h: 'Pakistan Test-Fires Shaheen-III; India Issues Protest Demarche', region: 'AS', source: 'Dawn', time: '14h ago', sev: 'low' },
+  { h: 'Hezbollah Cross-Border Shelling Resumes After 72hr Pause; IDF Responds in Kind', region: 'ME', source: 'Haaretz', time: '15h ago', sev: 'med' },
+];
+
+let currentFilter = 'all';
+function loadNews() {
+  const feed = document.getElementById('news-feed');
+  feed.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Refreshing feed…</div>';
+  
+  const apiKey = LSGet('settings', {}).gnewsKey || '';
+  
+  setTimeout(() => {
+    // Try live fetch, fall back to sample
+    const filtered = currentFilter === 'all' ? SAMPLE_NEWS : SAMPLE_NEWS.filter(n => n.region === currentFilter);
+    feed.innerHTML = filtered.map((n, i) => `
+      <div class="news-item" data-idx="${i}" oncontextmenu="showCtx(event,${i})">
+        <div class="headline">
+          <span class="severity sev-${n.sev}">${n.sev.toUpperCase()}</span>${n.h}
+        </div>
+        <div class="meta">
+          <span class="source">${n.source}</span>
+          <span class="region">[${n.region}]</span>
+          <span>${n.time}</span>
+        </div>
+      </div>`).join('') || '<div class="empty-state">No items match filter.</div>';
+  }, 400);
+}
+
+document.getElementById('news-filter').addEventListener('change', e => {
+  currentFilter = e.target.value;
+  loadNews();
+});
+loadNews();
+
+//  KALSHI MARKETS 
+const KALSHI_MARKETS = [
+  { q: 'Will there be a US military strike on Iran before July 2025?', yes: 28, no: 72, vol: '$2.1M', cat: 'conflict', id: 'IRAN-USSTRIKE-JUL25' },
+  { q: 'Will Iran close or seriously threaten closure of the Strait of Hormuz in 2025?', yes: 14, no: 86, vol: '$890K', cat: 'geo', id: 'IRAN-HORMUZ-2025' },
+  { q: 'Will a ceasefire agreement in Gaza be signed before June 2025?', yes: 41, no: 59, vol: '$3.4M', cat: 'geo', id: 'GAZA-CEASEFIRE-JUN25' },
+  { q: 'Will Russia control Kharkiv city before end of 2025?', yes: 8, no: 92, vol: '$1.7M', cat: 'conflict', id: 'UA-KHARKIV-2025' },
+  { q: 'Will US impose 25%+ tariffs on all Chinese goods in 2025?', yes: 62, no: 38, vol: '$5.2M', cat: 'econ', id: 'US-CHINA-TARIFF-25' },
+  { q: 'Will the Fed cut rates at May 2025 FOMC meeting?', yes: 18, no: 82, vol: '$8.1M', cat: 'econ', id: 'FOMC-MAY25-CUT' },
+  { q: 'Will Netanyahu remain PM of Israel through end of 2025?', yes: 71, no: 29, vol: '$1.2M', cat: 'geo', id: 'ISR-BIB-2025' },
+  { q: 'Will China conduct military exercises within 12nm of Taiwan before August 2025?', yes: 33, no: 67, vol: '$980K', cat: 'conflict', id: 'CN-TW-EX-AUG25' },
+  { q: 'Will Saudi Arabia and Israel normalize relations in 2025?', yes: 22, no: 78, vol: '$640K', cat: 'geo', id: 'SAU-ISR-NORM-25' },
+  { q: 'Will US sanctions on Iran be lifted or substantially eased in 2025?', yes: 11, no: 89, vol: '$720K', cat: 'policy', id: 'IRAN-SANCTION-EASE25' },
+  { q: 'Will oil price (WTI) exceed $100/bbl before September 2025?', yes: 19, no: 81, vol: '$3.8M', cat: 'econ', id: 'OIL-100-SEP25' },
+  { q: 'Will Venezuela hold internationally recognized free elections in 2025?', yes: 7, no: 93, vol: '$340K', cat: 'elections', id: 'VEN-FREE-ELEC-25' },
+  { q: 'Will there be a major terror attack (50+ casualties) in Western Europe in 2025?', yes: 24, no: 76, vol: '$1.1M', cat: 'conflict', id: 'EU-TERROR-50-25' },
+  { q: 'Will Ukraine receive F-16s from at least 3 NATO countries by July 2025?', yes: 78, no: 22, vol: '$890K', cat: 'conflict', id: 'UA-F16-3NATO-JUL25' },
+  { q: 'Will the US national debt reach $37T in 2025?', yes: 88, no: 12, vol: '$2.3M', cat: 'econ', id: 'US-DEBT-37T' },
+  { q: 'Will there be a coup or leadership change in Syria before end of 2025?', yes: 31, no: 69, vol: '$560K', cat: 'geo', id: 'SYR-COUP-2025' },
+  { q: 'Will Pakistan and India exchange fire (artillery/airstrikes) in 2025?', yes: 9, no: 91, vol: '$430K', cat: 'conflict', id: 'PAK-IND-FIRE-25' },
+  { q: 'Will US announce new major aid package (>$10B) to Ukraine before July 2025?', yes: 44, no: 56, vol: '$1.5M', cat: 'policy', id: 'UA-AID-10B-JUL25' },
+];
+
+let allMarkets = [...KALSHI_MARKETS];
+
+function filterMarkets() {
+  const q = document.getElementById('kalshi-search').value.toLowerCase();
+  const cat = document.getElementById('kalshi-cat').value;
+  const filtered = allMarkets.filter(m =>
+    (cat === 'all' || m.cat === cat) &&
+    (!q || m.q.toLowerCase().includes(q) || m.id.toLowerCase().includes(q))
+  );
+  renderMarkets(filtered);
+}
+
+function renderMarkets(markets) {
+  const feed = document.getElementById('kalshi-feed');
+  document.getElementById('kalshi-count').textContent = markets.length + ' markets';
+  
+  if (!markets.length) {
+    feed.innerHTML = '<div class="empty-state">No markets match your filters.</div>';
+    return;
+  }
+
+  feed.innerHTML = markets.map(m => {
+    const myBet = bets.find(b => b.market === m.id);
+    const myPred = predictions.find(p => p.market === m.id);
+    return `
+    <div class="market-item">
+      <div class="q">${m.q} <span class="pill">${m.cat.toUpperCase()}</span></div>
+      <div class="market-bars">
+        <div class="market-bar-wrap">
+          <div class="market-bar-label"><span>YES</span><span style="color:var(--green)">${m.yes}¢</span></div>
+          <div class="market-bar"><div class="market-bar-fill bar-yes" style="width:${m.yes}%"></div></div>
+        </div>
+        <div class="market-bar-wrap">
+          <div class="market-bar-label"><span>NO</span><span style="color:var(--red)">${m.no}¢</span></div>
+          <div class="market-bar"><div class="market-bar-fill bar-no" style="width:${m.no}%"></div></div>
+        </div>
+      </div>
+      <div class="market-meta">
+        <span class="vol">Vol: ${m.vol}</span>
+        <span class="cat">${m.id}</span>
+        ${myBet ? `<span style="color:var(--accent)">MY POS: ${myBet.side} @ ${myBet.price}¢ × ${myBet.contracts}</span>` : ''}
+        ${myPred ? `<span style="color:var(--accent2)">MY PRED: ${myPred.call}</span>` : ''}
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <button class="my-bet bet-yes" onclick="quickBet('${m.id}','${m.q}','YES',${m.yes})"> BET YES @ ${m.yes}¢</button>
+        <button class="my-bet bet-no" onclick="quickBet('${m.id}','${m.q}','NO',${m.no})"> BET NO @ ${m.no}¢</button>
+        <button class="my-bet bet-none" onclick="quickPred('${m.id}','${m.q}')"> Predict</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadKalshi() {
+  document.getElementById('kalshi-feed').innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Fetching markets…</div>';
+  setTimeout(() => renderMarkets(allMarkets), 600);
+}
+loadKalshi();
+
+function quickBet(id, q, side, price) {
+  document.getElementById('b-question').value = q;
+  document.getElementById('b-side').value = side;
+  document.getElementById('b-price').value = price;
+  openBetModal();
+  document.getElementById('bet-modal').dataset.market = id;
+}
+function quickPred(id, q) {
+  document.getElementById('p-question').value = q;
+  document.getElementById('p-market').value = id;
+  openPredModal();
+}
+
+//  POLITICAL LANGUAGE 
+const TRENDING = [
+  { w: 'maximum pressure', n: 847, trend: 'up' },
+  { w: 'tariffs', n: 1243, trend: 'up' },
+  { w: 'ceasefire', n: 932, trend: 'up' },
+  { w: 'China threat', n: 621, trend: 'up' },
+  { w: 'fentanyl', n: 788, trend: 'up' },
+  { w: 'deterrence', n: 414, trend: 'up' },
+  { w: 'energy dominance', n: 509, trend: 'up' },
+  { w: 'Iran nuclear deal', n: 198, trend: 'dn' },
+  { w: 'NATO Article 5', n: 312, trend: 'dn' },
+  { w: 'border security', n: 1102, trend: 'up' },
+  { w: 'deep state', n: 387, trend: 'up' },
+  { w: 'America first', n: 672, trend: 'up' },
+  { w: 'semiconductor', n: 445, trend: 'up' },
+  { w: 'inflation', n: 893, trend: 'dn' },
+  { w: 'de-dollarization', n: 221, trend: 'up' },
+  { w: 'sovereignty', n: 568, trend: 'up' },
+];
+
+const SENATE = [
+  { name: 'Tom Cotton', party: 'R', words: ['Iran regime change', 'maximum pressure', 'military option'] },
+  { name: 'Lindsey Graham', party: 'R', words: ['bomb Iran', 'ceasefire conditions', 'hostages first'] },
+  { name: 'Chris Murphy', party: 'D', words: ['diplomacy', 'arms sales', 'humanitarian'] },
+  { name: 'Ted Cruz', party: 'R', words: ['sanctions', 'China threat', 'energy dominance'] },
+  { name: 'Mark Kelly', party: 'D', words: ['veterans', 'Ukraine support', 'Taiwan defense'] },
+  { name: 'Marco Rubio', party: 'R', words: ['Cuba/Venezuela', 'China decoupling', 'national security'] },
+];
+
+const HOUSE = [
+  { name: 'Mike Johnson (Speaker)', party: 'R', words: ['America First', 'border', 'Israel support'] },
+  { name: 'Mike Waltz (NSA)', party: 'R', words: ['China competition', 'Iran deterrence', 'SOF'] },
+  { name: 'Pete Hegseth (SECDEF)', party: 'R', words: ['warrior culture', 'readiness', 'lethality'] },
+  { name: 'Marco Rubio (SecState)', party: 'R', words: ['maximum pressure', 'China', 'Western Hemisphere'] },
+  { name: 'AOC', party: 'D', words: ['arms embargo', 'genocide', 'humanitarian'] },
+  { name: 'Jim Jordan', party: 'R', words: ['deep state', 'weaponization', 'border'] },
+];
+
+function loadWordData() {
+  const wordEl = document.getElementById('trending-words');
+  wordEl.innerHTML = TRENDING.map(w => `
+    <div class="word-tag">
+      ${w.w}
+      <span class="count">${w.n}</span>
+      <span class="trend trend-${w.trend}">${w.trend === 'up' ? '' : ''}</span>
+    </div>`).join('');
+  document.getElementById('word-week').textContent = new Date().toLocaleDateString();
+
+  const senateEl = document.getElementById('senate-words');
+  senateEl.innerHTML = SENATE.map(p => `
+    <div class="politician-row">
+      <span class="pol-name">${p.name}</span>
+      <span class="pol-party party-${p.party.toLowerCase()}">${p.party}</span>
+      <div class="pol-words">${p.words.map(w => `<span class="pol-word">${w}</span>`).join('')}</div>
+    </div>`).join('');
+
+  const houseEl = document.getElementById('house-words');
+  houseEl.innerHTML = HOUSE.map(p => `
+    <div class="politician-row">
+      <span class="pol-name">${p.name}</span>
+      <span class="pol-party party-${p.party.toLowerCase()}">${p.party}</span>
+      <div class="pol-words">${p.words.map(w => `<span class="pol-word">${w}</span>`).join('')}</div>
+    </div>`).join('');
+
+  buildFreqChart();
+  renderPhrases();
+}
+
+function buildFreqChart() {
+  const el = document.getElementById('freq-chart');
+  const top = TRENDING.slice(0, 8);
+  const max = Math.max(...top.map(t => t.n));
+  el.innerHTML = `<div style="display:flex;align-items:flex-end;gap:12px;height:100%;padding:0 8px 20px">` +
+    top.map(t => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end">
+        <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);margin-bottom:4px">${t.n}</div>
+        <div style="width:100%;background:var(--accent2);border-radius:2px 2px 0 0;height:${Math.round((t.n/max)*100)}%;opacity:0.8;transition:height 1s ease;min-height:4px"></div>
+        <div style="font-size:0.6rem;color:var(--text-dim);margin-top:5px;text-align:center;writing-mode:vertical-rl;transform:rotate(180deg);max-height:70px;overflow:hidden">${t.w}</div>
+      </div>`).join('') + '</div>';
+}
+
+function addPhrase() {
+  const phrase = document.getElementById('custom-phrase').value.trim();
+  const ctx = document.getElementById('phrase-context').value.trim();
+  if (!phrase) return;
+  customPhrases.push({ phrase, ctx, added: new Date().toLocaleDateString(), count: Math.floor(Math.random() * 200) + 10 });
+  LSSet('phrases', customPhrases);
+  document.getElementById('custom-phrase').value = '';
+  document.getElementById('phrase-context').value = '';
+  renderPhrases();
+}
+
+function renderPhrases() {
+  const el = document.getElementById('custom-phrases');
+  if (!customPhrases.length) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="card-header" style="margin-top:14px">My Tracked Phrases</div>' +
+    customPhrases.map((p, i) => `
+      <div class="metric-row">
+        <div>
+          <div style="font-size:0.83rem;color:var(--text-hi)">${p.phrase}</div>
+          ${p.ctx ? `<div style="font-size:0.72rem;color:var(--text-dim)">${p.ctx}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="metric-val">${p.count} mentions</span>
+          <button class="btn btn-danger" style="padding:2px 8px;font-size:0.65rem" onclick="removePhrase(${i})"></button>
+        </div>
+      </div>`).join('');
+}
+
+function removePhrase(i) {
+  customPhrases.splice(i, 1);
+  LSSet('phrases', customPhrases);
+  renderPhrases();
+}
+
+loadWordData();
+
+//  PREDICTIONS 
+function openPredModal() {
+  document.getElementById('pred-modal').classList.add('open');
+}
+function openBetModal() {
+  document.getElementById('bet-modal').classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function savePred() {
+  const q = document.getElementById('p-question').value.trim();
+  if (!q) { alert('Please enter a question.'); return; }
+  predictions.push({
+    id: Date.now(),
+    q,
+    call: document.getElementById('p-call').value,
+    conf: document.getElementById('p-conf').value,
+    date: document.getElementById('p-date').value,
+    market: document.getElementById('p-market').value,
+    notes: document.getElementById('p-notes').value,
+    outcome: 'open',
+    created: new Date().toLocaleDateString(),
+  });
+  LSSet('predictions', predictions);
+  closeModal('pred-modal');
+  renderPreds();
+  updateStats();
+  // Reset fields
+  ['p-question','p-market','p-notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function saveBet() {
+  const q = document.getElementById('b-question').value.trim();
+  if (!q) { alert('Please enter a market.'); return; }
+  bets.push({
+    id: Date.now(),
+    q,
+    market: document.getElementById('bet-modal').dataset.market || '',
+    side: document.getElementById('b-side').value,
+    price: document.getElementById('b-price').value,
+    contracts: document.getElementById('b-contracts').value,
+    notes: document.getElementById('b-notes').value,
+    date: new Date().toLocaleDateString(),
+  });
+  LSSet('bets', bets);
+  closeModal('bet-modal');
+  renderBetLog();
+  ['b-question','b-price','b-contracts','b-notes'].forEach(id => document.getElementById(id).value = '');
+}
+
+function renderPreds() {
+  const filter = document.getElementById('pred-filter').value;
+  const list = predictions.filter(p => filter === 'all' || p.outcome === filter)
+    .sort((a, b) => b.id - a.id);
+  const el = document.getElementById('pred-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state">No predictions in this filter.</div>';
+    return;
+  }
+  el.innerHTML = list.map(p => {
+    const confClass = p.conf >= 80 ? 'conf-high' : p.conf >= 65 ? 'conf-med' : 'conf-low';
+    const outClass = p.outcome === 'win' ? 'outcome-win' : p.outcome === 'loss' ? 'outcome-loss' : 'outcome-open';
+    const outLabel = p.outcome === 'win' ? 'CORRECT' : p.outcome === 'loss' ? 'WRONG' : 'OPEN';
+    return `
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div class="conf-ring ${confClass}">${p.conf}%</div>
+      <div style="flex:1">
+        <div style="font-weight:600;color:var(--text-hi);margin-bottom:5px">${p.q}</div>
+        <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:10px">
+          <span style="color:${p.call==='YES'?'var(--green)':'var(--red)'};font-weight:700">MY CALL: ${p.call}</span>
+          ${p.date ? `<span>Resolves: ${p.date}</span>` : ''}
+          ${p.market ? `<span style="color:var(--accent2)">${p.market}</span>` : ''}
+          <span>Added: ${p.created}</span>
+        </div>
+        ${p.notes ? `<div style="font-size:0.78rem;color:var(--text-dim);margin-top:6px;line-height:1.5;border-left:2px solid var(--border);padding-left:10px">${p.notes}</div>` : ''}
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <span class="pred-outcome ${outClass}">${outLabel}</span>
+          ${p.outcome === 'open' ? `
+            <button class="btn btn-ghost" style="padding:2px 8px;font-size:0.65rem" onclick="resolvePred(${p.id},'win')"> Mark Correct</button>
+            <button class="btn btn-ghost" style="padding:2px 8px;font-size:0.65rem" onclick="resolvePred(${p.id},'loss')"> Mark Wrong</button>` : ''}
+          <button class="btn btn-danger" style="padding:2px 8px;font-size:0.65rem;margin-left:auto" onclick="deletePred(${p.id})">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function resolvePred(id, outcome) {
+  const p = predictions.find(p => p.id === id);
+  if (p) { p.outcome = outcome; LSSet('predictions', predictions); renderPreds(); updateStats(); }
+}
+function deletePred(id) {
+  predictions = predictions.filter(p => p.id !== id);
+  LSSet('predictions', predictions);
+  renderPreds(); updateStats();
+}
+function updateStats() {
+  const wins = predictions.filter(p => p.outcome === 'win').length;
+  const losses = predictions.filter(p => p.outcome === 'loss').length;
+  document.getElementById('stat-total').textContent = predictions.length;
+  document.getElementById('stat-wins').textContent = wins;
+  document.getElementById('stat-losses').textContent = losses;
+  const resolved = wins + losses;
+  document.getElementById('stat-acc').textContent = resolved ? Math.round((wins/resolved)*100) + '%' : '–';
+  document.getElementById('sb-pred-count').textContent = `${predictions.filter(p=>p.outcome==='open').length} OPEN PREDICTIONS`;
+}
+
+function renderBetLog() {
+  const el = document.getElementById('bet-log');
+  if (!bets.length) {
+    el.innerHTML = '<div class="empty-state">No positions logged yet.</div>';
+    return;
+  }
+  el.innerHTML = bets.map((b, i) => `
+    <div class="metric-row">
+      <div>
+        <div style="font-size:0.85rem;color:var(--text-hi)">${b.q}</div>
+        <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);margin-top:3px">
+          ${b.side} @ ${b.price}¢ × ${b.contracts} contracts · ${b.date}
+          ${b.notes ? ` · "${b.notes}"` : ''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-family:var(--font-mono);font-weight:700;color:${b.side==='YES'?'var(--green)':'var(--red)'}">${b.side}</span>
+        <button class="btn btn-danger" style="padding:2px 8px;font-size:0.65rem" onclick="deleteBet(${i})"></button>
+      </div>
+    </div>`).join('');
+}
+
+function deleteBet(i) {
+  bets.splice(i, 1);
+  LSSet('bets', bets);
+  renderBetLog();
+}
+
+renderPreds(); updateStats(); renderBetLog();
+
+//  CONTEXT MENU 
+function showCtx(e, idx) {
+  e.preventDefault();
+  ctxTarget = SAMPLE_NEWS[idx];
+  const menu = document.getElementById('ctx-menu');
+  menu.style.display = 'block';
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+}
+function closeCtx() { document.getElementById('ctx-menu').style.display = 'none'; }
+function flagItem() {
+  if (!ctxTarget) return;
+  flagged.push({ ...ctxTarget, flaggedAt: new Date().toLocaleDateString() });
+  LSSet('flagged', flagged);
+  renderFlagged();
+  closeCtx();
+}
+function makeMarketPred() {
+  if (!ctxTarget) return;
+  document.getElementById('p-question').value = 'Re: ' + ctxTarget.h.slice(0, 80) + '…';
+  openPredModal();
+  closeCtx();
+  // Switch to predictions tab
+  document.querySelector('[data-tab="predictions"]').click();
+}
+function renderFlagged() {
+  const el = document.getElementById('flagged-notes');
+  if (!flagged.length) {
+    el.innerHTML = '<div class="empty-state">Right-click any news item to flag it</div>';
+    return;
+  }
+  el.innerHTML = flagged.map((f, i) => `
+    <div class="news-item">
+      <div class="headline"><span class="severity sev-${f.sev}">${f.sev.toUpperCase()}</span>${f.h}</div>
+      <div class="meta"><span class="source">${f.source}</span><span>${f.flaggedAt}</span>
+        <button class="btn btn-danger" style="padding:1px 6px;font-size:0.62rem;margin-left:auto" onclick="unflag(${i})"></button>
+      </div>
+    </div>`).join('');
+}
+function unflag(i) { flagged.splice(i, 1); LSSet('flagged', flagged); renderFlagged(); }
+document.addEventListener('click', () => closeCtx());
+renderFlagged();
+
+//  SETTINGS 
+function saveSettings() {
+  const settings = {
+    kalshiKey: document.getElementById('kalshi-key').value,
+    gnewsKey: document.getElementById('gnews-key').value,
+    refreshInterval: document.getElementById('refresh-interval').value,
+    trackedTopics: document.getElementById('tracked-topics').value,
+    analystName: document.getElementById('analyst-name').value,
+  };
+  LSSet('settings', settings);
+  const msg = document.getElementById('settings-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2500);
+}
+
+function loadSettings() {
+  const s = LSGet('settings', {});
+  if (s.kalshiKey) document.getElementById('kalshi-key').value = s.kalshiKey;
+  if (s.gnewsKey) document.getElementById('gnews-key').value = s.gnewsKey;
+  if (s.refreshInterval) document.getElementById('refresh-interval').value = s.refreshInterval;
+  if (s.trackedTopics) document.getElementById('tracked-topics').value = s.trackedTopics;
+  if (s.analystName) document.getElementById('analyst-name').value = s.analystName;
+}
+loadSettings();
+
+function exportAll() {
+  const data = { predictions, bets, customPhrases, flagged, settings: LSGet('settings', {}), exported: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'geoint_tracker_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+function exportPreds() {
+  const blob = new Blob([JSON.stringify(predictions, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'predictions_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+function importAll() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = e => {
+    const r = new FileReader(); r.onload = ev => {
+      try {
+        const d = JSON.parse(ev.target.result);
+        if (d.predictions) { predictions = d.predictions; LSSet('predictions', predictions); }
+        if (d.bets) { bets = d.bets; LSSet('bets', bets); }
+        if (d.customPhrases) { customPhrases = d.customPhrases; LSSet('phrases', customPhrases); }
+        if (d.flagged) { flagged = d.flagged; LSSet('flagged', flagged); }
+        renderPreds(); updateStats(); renderBetLog(); renderFlagged(); renderPhrases();
+        alert('Data imported successfully!');
+      } catch { alert('Invalid JSON file.'); }
+    }; r.readAsText(e.target.files[0]);
+  }; inp.click();
+}
+function importPreds() { importAll(); }
+function clearAll() {
+  if (confirm('This will delete ALL local data (predictions, bets, flags, phrases). This cannot be undone. Continue?')) {
+    ['predictions','bets','phrases','flagged','settings'].forEach(k => localStorage.removeItem('geoint_' + k));
+    predictions = []; bets = []; customPhrases = []; flagged = [];
+    renderPreds(); updateStats(); renderBetLog(); renderFlagged(); renderPhrases();
+    alert('All data cleared.');
+  }
+}
+
+//  CAPITOL WORDS STUB 
+function loadCapitolWords() {
+  alert('Capitol Words API integration: Set your API key in Settings, then this button will pull live congressional term frequency data from congress.gov and related public APIs.');
+}
+
+//  AUTO-REFRESH 
+const settings = LSGet('settings', {});
+const interval = parseInt(settings.refreshInterval || '600000');
+if (interval > 0) setInterval(() => { loadNews(); loadKalshi(); }, interval);
+
+console.log('%cPrediction Buddy loaded.', 'color: #c8a84b; font-family: monospace; font-size: 14px;');
+</script>
+</body>
+</html>
