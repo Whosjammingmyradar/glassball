@@ -738,13 +738,16 @@
 
     <div class="search-bar">
       <input type="text" id="kalshi-search" placeholder="Search markets… (e.g. Iran, Ukraine, tariff, election)" oninput="filterMarkets()">
-      <select id="kalshi-cat" onchange="filterMarkets()" style="width:160px">
+      <select id="kalshi-cat" onchange="filterMarkets()" style="width:170px">
         <option value="all">All Categories</option>
+        <option value="conflict">Conflict / War</option>
         <option value="geo">Geopolitical</option>
         <option value="econ">Economic</option>
-        <option value="conflict">Conflict</option>
+        <option value="monetary">Monetary Policy</option>
+        <option value="politics">US Politics</option>
         <option value="elections">Elections</option>
-        <option value="policy">Policy</option>
+        <option value="tech">Technology / AI</option>
+        <option value="energy">Energy</option>
       </select>
       <button class="btn btn-primary" onclick="loadKalshi()">↻ Refresh</button>
     </div>
@@ -1582,24 +1585,132 @@ loadNews();
 
 //  KALSHI MARKETS 
 const KALSHI_MARKETS = [
-  { q: 'Will there be a US military strike on Iran before July 2025?', yes: 28, no: 72, vol: '$2.1M', cat: 'conflict', id: 'IRAN-USSTRIKE-JUL25' },
-  { q: 'Will Iran close or seriously threaten closure of the Strait of Hormuz in 2025?', yes: 14, no: 86, vol: '$890K', cat: 'geo', id: 'IRAN-HORMUZ-2025' },
-  { q: 'Will a ceasefire agreement in Gaza be signed before June 2025?', yes: 41, no: 59, vol: '$3.4M', cat: 'geo', id: 'GAZA-CEASEFIRE-JUN25' },
-  { q: 'Will Russia control Kharkiv city before end of 2025?', yes: 8, no: 92, vol: '$1.7M', cat: 'conflict', id: 'UA-KHARKIV-2025' },
-  { q: 'Will US impose 25%+ tariffs on all Chinese goods in 2025?', yes: 62, no: 38, vol: '$5.2M', cat: 'econ', id: 'US-CHINA-TARIFF-25' },
-  { q: 'Will the Fed cut rates at May 2025 FOMC meeting?', yes: 18, no: 82, vol: '$8.1M', cat: 'econ', id: 'FOMC-MAY25-CUT' },
-  { q: 'Will Netanyahu remain PM of Israel through end of 2025?', yes: 71, no: 29, vol: '$1.2M', cat: 'geo', id: 'ISR-BIB-2025' },
-  { q: 'Will China conduct military exercises within 12nm of Taiwan before August 2025?', yes: 33, no: 67, vol: '$980K', cat: 'conflict', id: 'CN-TW-EX-AUG25' },
-  { q: 'Will Saudi Arabia and Israel normalize relations in 2025?', yes: 22, no: 78, vol: '$640K', cat: 'geo', id: 'SAU-ISR-NORM-25' },
-  { q: 'Will US sanctions on Iran be lifted or substantially eased in 2025?', yes: 11, no: 89, vol: '$720K', cat: 'policy', id: 'IRAN-SANCTION-EASE25' },
-  { q: 'Will oil price (WTI) exceed $100/bbl before September 2025?', yes: 19, no: 81, vol: '$3.8M', cat: 'econ', id: 'OIL-100-SEP25' },
-  { q: 'Will Venezuela hold internationally recognized free elections in 2025?', yes: 7, no: 93, vol: '$340K', cat: 'elections', id: 'VEN-FREE-ELEC-25' },
-  { q: 'Will there be a major terror attack (50+ casualties) in Western Europe in 2025?', yes: 24, no: 76, vol: '$1.1M', cat: 'conflict', id: 'EU-TERROR-50-25' },
-  { q: 'Will Ukraine receive F-16s from at least 3 NATO countries by July 2025?', yes: 78, no: 22, vol: '$890K', cat: 'conflict', id: 'UA-F16-3NATO-JUL25' },
-  { q: 'Will the US national debt reach $37T in 2025?', yes: 88, no: 12, vol: '$2.3M', cat: 'econ', id: 'US-DEBT-37T' },
-  { q: 'Will there be a coup or leadership change in Syria before end of 2025?', yes: 31, no: 69, vol: '$560K', cat: 'geo', id: 'SYR-COUP-2025' },
-  { q: 'Will Pakistan and India exchange fire (artillery/airstrikes) in 2025?', yes: 9, no: 91, vol: '$430K', cat: 'conflict', id: 'PAK-IND-FIRE-25' },
-  { q: 'Will US announce new major aid package (>$10B) to Ukraine before July 2025?', yes: 44, no: 56, vol: '$1.5M', cat: 'policy', id: 'UA-AID-10B-JUL25' },
+
+  // ── CONFLICT & WAR ──
+  { q:'Will there be a US military strike on Iran before July 2025?', yes:28, no:72, vol:'$2.1M', cat:'conflict', id:'IRAN-USSTRIKE-JUL25' },
+  { q:'Will Iran close or seriously threaten closure of the Strait of Hormuz in 2025?', yes:14, no:86, vol:'$890K', cat:'conflict', id:'IRAN-HORMUZ-2025' },
+  { q:'Will Israel conduct a ground invasion of Lebanon in 2025?', yes:11, no:89, vol:'$760K', cat:'conflict', id:'ISR-LEB-GROUND-25' },
+  { q:'Will Hezbollah fire more than 100 rockets into Israel in a single day in 2025?', yes:22, no:78, vol:'$430K', cat:'conflict', id:'HEZ-100-ROCKETS-25' },
+  { q:'Will there be a direct military clash between the US and Iran in 2025?', yes:18, no:82, vol:'$1.4M', cat:'conflict', id:'US-IRAN-CLASH-25' },
+  { q:'Will Russia control Kharkiv city before end of 2025?', yes:8, no:92, vol:'$1.7M', cat:'conflict', id:'UA-KHARKIV-2025' },
+  { q:'Will Russia control Kyiv before end of 2025?', yes:3, no:97, vol:'$980K', cat:'conflict', id:'UA-KYIV-2025' },
+  { q:'Will a ceasefire in Ukraine last more than 30 days in 2025?', yes:31, no:69, vol:'$2.2M', cat:'conflict', id:'UA-CEASEFIRE-30D-25' },
+  { q:'Will Ukraine lose Zaporizhzhia region before end of 2025?', yes:12, no:88, vol:'$640K', cat:'conflict', id:'UA-ZAP-LOST-25' },
+  { q:'Will China conduct military exercises within 12nm of Taiwan before August 2025?', yes:33, no:67, vol:'$980K', cat:'conflict', id:'CN-TW-EX-AUG25' },
+  { q:'Will there be armed conflict between China and Taiwan in 2025?', yes:5, no:95, vol:'$2.8M', cat:'conflict', id:'CN-TW-WAR-25' },
+  { q:'Will there be armed conflict between China and the Philippines in 2025?', yes:9, no:91, vol:'$780K', cat:'conflict', id:'CN-PH-CLASH-25' },
+  { q:'Will Pakistan and India exchange fire (artillery/airstrikes) in 2025?', yes:9, no:91, vol:'$430K', cat:'conflict', id:'PAK-IND-FIRE-25' },
+  { q:'Will there be a major terror attack (50+ casualties) in Western Europe in 2025?', yes:24, no:76, vol:'$1.1M', cat:'conflict', id:'EU-TERROR-50-25' },
+  { q:'Will Houthi attacks in the Red Sea continue past June 2025?', yes:72, no:28, vol:'$560K', cat:'conflict', id:'HOUTHI-REDSEA-JUN25' },
+  { q:'Will the US conduct airstrikes on Houthi targets in Yemen in 2025?', yes:84, no:16, vol:'$890K', cat:'conflict', id:'US-HOUTHI-STRIKE-25' },
+  { q:'Will PMF/Kataib Hezbollah conduct a major attack on US forces in Iraq or Syria in 2025?', yes:31, no:69, vol:'$390K', cat:'conflict', id:'PMF-ATTACK-25' },
+  { q:'Will North Korea conduct a nuclear test in 2025?', yes:14, no:86, vol:'$1.9M', cat:'conflict', id:'DPRK-NUKE-TEST-25' },
+  { q:'Will North Korea launch an ICBM test in 2025?', yes:38, no:62, vol:'$870K', cat:'conflict', id:'DPRK-ICBM-25' },
+  { q:'Will there be a military coup in any G20 country in 2025?', yes:6, no:94, vol:'$340K', cat:'conflict', id:'G20-COUP-25' },
+  { q:'Will Sudan civil war result in a peace agreement in 2025?', yes:11, no:89, vol:'$280K', cat:'conflict', id:'SUDAN-PEACE-25' },
+  { q:'Will there be a coup or leadership change in Syria before end of 2025?', yes:31, no:69, vol:'$560K', cat:'conflict', id:'SYR-COUP-2025' },
+  { q:'Will Iran conduct a direct missile/drone attack on Israel in 2025?', yes:24, no:76, vol:'$1.6M', cat:'conflict', id:'IRAN-DIRECT-ATTACK-ISR-25' },
+  { q:'Will Israel strike Iranian nuclear facilities in 2025?', yes:19, no:81, vol:'$3.1M', cat:'conflict', id:'ISR-IRAN-NUCLEAR-STRIKE-25' },
+
+  // ── GEOPOLITICAL ──
+  { q:'Will a ceasefire agreement in Gaza be signed before June 2025?', yes:41, no:59, vol:'$3.4M', cat:'geo', id:'GAZA-CEASEFIRE-JUN25' },
+  { q:'Will Netanyahu remain PM of Israel through end of 2025?', yes:71, no:29, vol:'$1.2M', cat:'geo', id:'ISR-BIB-2025' },
+  { q:'Will Saudi Arabia and Israel normalize relations in 2025?', yes:22, no:78, vol:'$640K', cat:'geo', id:'SAU-ISR-NORM-25' },
+  { q:'Will US sanctions on Iran be lifted or substantially eased in 2025?', yes:11, no:89, vol:'$720K', cat:'geo', id:'IRAN-SANCTION-EASE25' },
+  { q:'Will Iran sign a new nuclear deal in 2025?', yes:13, no:87, vol:'$1.1M', cat:'geo', id:'IRAN-NUKE-DEAL-25' },
+  { q:'Will Venezuela hold internationally recognized free elections in 2025?', yes:7, no:93, vol:'$340K', cat:'geo', id:'VEN-FREE-ELEC-25' },
+  { q:'Will Ukraine receive F-16s from at least 3 NATO countries by July 2025?', yes:78, no:22, vol:'$890K', cat:'geo', id:'UA-F16-3NATO-JUL25' },
+  { q:'Will US announce new major aid package (>$10B) to Ukraine before July 2025?', yes:44, no:56, vol:'$1.5M', cat:'geo', id:'UA-AID-10B-JUL25' },
+  { q:'Will NATO Article 5 be invoked in 2025?', yes:4, no:96, vol:'$1.2M', cat:'geo', id:'NATO-ART5-25' },
+  { q:'Will any NATO country formally withdraw from NATO in 2025?', yes:2, no:98, vol:'$430K', cat:'geo', id:'NATO-EXIT-25' },
+  { q:'Will Russia formally annex any additional Ukrainian territory in 2025?', yes:21, no:79, vol:'$880K', cat:'geo', id:'RU-ANNEX-UA-25' },
+  { q:'Will Xi Jinping visit Taiwan before 2026?', yes:2, no:98, vol:'$290K', cat:'geo', id:'XI-TW-VISIT-25' },
+  { q:'Will the UN Security Council pass a Gaza ceasefire resolution in 2025?', yes:28, no:72, vol:'$540K', cat:'geo', id:'UNSC-GAZA-RES-25' },
+  { q:'Will Putin meet with Trump in person in 2025?', yes:52, no:48, vol:'$2.1M', cat:'geo', id:'PUTIN-TRUMP-MEET-25' },
+  { q:'Will Zelensky meet with Trump in person in 2025?', yes:71, no:29, vol:'$1.8M', cat:'geo', id:'ZEL-TRUMP-MEET-25' },
+  { q:'Will Trump visit Europe in 2025?', yes:48, no:52, vol:'$870K', cat:'geo', id:'TRUMP-EU-VISIT-25' },
+  { q:'Will the ICC issue an arrest warrant for a sitting US official in 2025?', yes:4, no:96, vol:'$290K', cat:'geo', id:'ICC-US-WARRANT-25' },
+  { q:'Will Maduro remain president of Venezuela through end of 2025?', yes:68, no:32, vol:'$560K', cat:'geo', id:'MADURO-PRES-25' },
+  { q:'Will Turkey leave or be suspended from NATO in 2025?', yes:3, no:97, vol:'$340K', cat:'geo', id:'TURKEY-NATO-25' },
+  { q:'Will there be a formal peace treaty between Russia and Ukraine in 2025?', yes:12, no:88, vol:'$3.2M', cat:'geo', id:'RU-UA-PEACE-25' },
+  { q:'Will BRICS admit a new major member nation in 2025?', yes:31, no:69, vol:'$430K', cat:'geo', id:'BRICS-NEW-25' },
+  { q:'Will Iran rejoin JCPOA talks formally in 2025?', yes:24, no:76, vol:'$680K', cat:'geo', id:'IRAN-JCPOA-25' },
+
+  // ── ECONOMICS ──
+  { q:'Will US impose 25%+ tariffs on all Chinese goods in 2025?', yes:62, no:38, vol:'$5.2M', cat:'econ', id:'US-CHINA-TARIFF-25' },
+  { q:'Will oil price (WTI) exceed $100/bbl before September 2025?', yes:19, no:81, vol:'$3.8M', cat:'econ', id:'OIL-100-SEP25' },
+  { q:'Will oil price (WTI) fall below $60/bbl in 2025?', yes:14, no:86, vol:'$2.1M', cat:'econ', id:'OIL-60-25' },
+  { q:'Will the US national debt reach $37T in 2025?', yes:88, no:12, vol:'$2.3M', cat:'econ', id:'US-DEBT-37T' },
+  { q:'Will the US enter a recession in 2025?', yes:38, no:62, vol:'$8.9M', cat:'econ', id:'US-RECESSION-25' },
+  { q:'Will US GDP growth be negative for two consecutive quarters in 2025?', yes:29, no:71, vol:'$4.1M', cat:'econ', id:'US-GDP-NEG-2Q-25' },
+  { q:'Will the S&P 500 close above 6000 by end of 2025?', yes:54, no:46, vol:'$6.2M', cat:'econ', id:'SPX-6000-25' },
+  { q:'Will the S&P 500 fall more than 20% from its 2025 peak?', yes:31, no:69, vol:'$5.4M', cat:'econ', id:'SPX-BEAR-25' },
+  { q:'Will gold exceed $3000/oz in 2025?', yes:71, no:29, vol:'$3.1M', cat:'econ', id:'GOLD-3000-25' },
+  { q:'Will Bitcoin exceed $150,000 in 2025?', yes:38, no:62, vol:'$9.8M', cat:'econ', id:'BTC-150K-25' },
+  { q:'Will Bitcoin fall below $50,000 in 2025?', yes:21, no:79, vol:'$4.2M', cat:'econ', id:'BTC-50K-25' },
+  { q:'Will the US dollar index (DXY) fall below 95 in 2025?', yes:18, no:82, vol:'$1.8M', cat:'econ', id:'DXY-95-25' },
+  { q:'Will China devalue the yuan by more than 5% in 2025?', yes:16, no:84, vol:'$1.2M', cat:'econ', id:'CNY-DEVAL-25' },
+  { q:'Will OPEC+ announce a major production cut (>500k bpd) in 2025?', yes:34, no:66, vol:'$1.9M', cat:'econ', id:'OPEC-CUT-500K-25' },
+  { q:'Will the EU impose retaliatory tariffs on US goods in 2025?', yes:58, no:42, vol:'$2.8M', cat:'econ', id:'EU-RETALIATE-TARIFF-25' },
+  { q:'Will a major US bank fail or require government bailout in 2025?', yes:8, no:92, vol:'$2.1M', cat:'econ', id:'US-BANK-FAIL-25' },
+  { q:'Will Nvidia market cap exceed $4T in 2025?', yes:29, no:71, vol:'$3.4M', cat:'econ', id:'NVDA-4T-25' },
+  { q:'Will natural gas prices (Henry Hub) exceed $5/MMBtu in 2025?', yes:31, no:69, vol:'$780K', cat:'econ', id:'NATGAS-5-25' },
+  { q:'Will the Baltic Dry Index fall below 1000 in 2025?', yes:22, no:78, vol:'$340K', cat:'econ', id:'BDI-1000-25' },
+  { q:'Will US unemployment exceed 5% in 2025?', yes:24, no:76, vol:'$3.2M', cat:'econ', id:'US-UNEMP-5-25' },
+
+  // ── MONETARY POLICY ──
+  { q:'Will the Fed cut rates at May 2025 FOMC meeting?', yes:18, no:82, vol:'$8.1M', cat:'monetary', id:'FOMC-MAY25-CUT' },
+  { q:'Will the Fed cut rates at June 2025 FOMC meeting?', yes:34, no:66, vol:'$6.8M', cat:'monetary', id:'FOMC-JUN25-CUT' },
+  { q:'Will the Fed cut rates more than 3 times in 2025?', yes:21, no:79, vol:'$5.2M', cat:'monetary', id:'FED-3CUT-25' },
+  { q:'Will the Fed raise rates in 2025?', yes:9, no:91, vol:'$4.1M', cat:'monetary', id:'FED-HIKE-25' },
+  { q:'Will US CPI inflation exceed 4% in any month of 2025?', yes:28, no:72, vol:'$3.8M', cat:'monetary', id:'US-CPI-4-25' },
+  { q:'Will US CPI inflation fall below 2% in 2025?', yes:19, no:81, vol:'$2.9M', cat:'monetary', id:'US-CPI-2-25' },
+  { q:'Will the ECB cut rates more than 3 times in 2025?', yes:41, no:59, vol:'$2.1M', cat:'monetary', id:'ECB-3CUT-25' },
+  { q:'Will the Bank of Japan raise rates above 1% in 2025?', yes:44, no:56, vol:'$1.8M', cat:'monetary', id:'BOJ-1PCT-25' },
+  { q:'Will the Fed announce a new QE program in 2025?', yes:11, no:89, vol:'$2.4M', cat:'monetary', id:'FED-QE-25' },
+  { q:'Will US 10-year Treasury yield exceed 5.5% in 2025?', yes:31, no:69, vol:'$3.1M', cat:'monetary', id:'US10Y-55-25' },
+
+  // ── US POLITICS & POLICY ──
+  { q:'Will Trump be impeached by the House in 2025?', yes:6, no:94, vol:'$4.8M', cat:'politics', id:'TRUMP-IMPEACH-25' },
+  { q:'Will Trump pardon Julian Assange in 2025?', yes:28, no:72, vol:'$1.2M', cat:'politics', id:'TRUMP-ASSANGE-25' },
+  { q:'Will DOGE (Dept of Government Efficiency) be formally dissolved in 2025?', yes:8, no:92, vol:'$1.8M', cat:'politics', id:'DOGE-DISSOLVED-25' },
+  { q:'Will Elon Musk leave his government role before end of 2025?', yes:52, no:48, vol:'$6.2M', cat:'politics', id:'MUSK-LEAVE-GOV-25' },
+  { q:'Will the US withdraw from WHO in 2025?', yes:71, no:29, vol:'$1.4M', cat:'politics', id:'US-WHO-EXIT-25' },
+  { q:'Will the US formally withdraw from the Paris Climate Agreement in 2025?', yes:84, no:16, vol:'$1.1M', cat:'politics', id:'US-PARIS-EXIT-25' },
+  { q:'Will Republicans lose their House majority in a 2025 special election?', yes:14, no:86, vol:'$890K', cat:'politics', id:'R-HOUSE-LOSS-25' },
+  { q:'Will Trump invoke the Insurrection Act in 2025?', yes:12, no:88, vol:'$2.1M', cat:'politics', id:'TRUMP-INSURRECTION-25' },
+  { q:'Will the Supreme Court overturn a major Trump executive order in 2025?', yes:44, no:56, vol:'$3.2M', cat:'politics', id:'SCOTUS-TRUMP-EO-25' },
+  { q:'Will a US government shutdown last more than 2 weeks in 2025?', yes:31, no:69, vol:'$2.8M', cat:'politics', id:'US-SHUTDOWN-2W-25' },
+  { q:'Will Trump fire the Fed Chair Jerome Powell in 2025?', yes:16, no:84, vol:'$4.1M', cat:'politics', id:'TRUMP-FIRE-POWELL-25' },
+  { q:'Will Congress pass major immigration legislation in 2025?', yes:34, no:66, vol:'$2.2M', cat:'politics', id:'CONGRESS-IMMIG-25' },
+  { q:'Will the US debt ceiling be raised without default in 2025?', yes:81, no:19, vol:'$3.4M', cat:'politics', id:'US-DEBT-CEIL-25' },
+  { q:'Will RFK Jr resign from his cabinet position in 2025?', yes:24, no:76, vol:'$1.8M', cat:'politics', id:'RFK-RESIGN-25' },
+  { q:'Will Trump declare a national emergency over fentanyl/border in 2025?', yes:62, no:38, vol:'$1.6M', cat:'politics', id:'TRUMP-BORDER-EMERG-25' },
+
+  // ── ELECTIONS ──
+  { q:'Will there be a snap election in Germany in 2025?', yes:91, no:9, vol:'$1.2M', cat:'elections', id:'DE-SNAP-25' },
+  { q:'Will Marine Le Pen become President of France before 2028?', yes:19, no:81, vol:'$980K', cat:'elections', id:'FR-LEPEN-PRES-28' },
+  { q:'Will Emmanuel Macron remain French president through 2025?', yes:72, no:28, vol:'$780K', cat:'elections', id:'FR-MACRON-25' },
+  { q:'Will Canada hold a federal election in 2025?', yes:88, no:12, vol:'$890K', cat:'elections', id:'CA-ELECT-25' },
+  { q:'Will Justin Trudeau lead Liberals in next Canadian election?', yes:12, no:88, vol:'$670K', cat:'elections', id:'CA-TRUDEAU-LIB-25' },
+  { q:'Will the UK Labour Party win the next UK election?', yes:58, no:42, vol:'$1.1M', cat:'elections', id:'UK-LABOUR-25' },
+  { q:'Will Olaf Scholz remain German chancellor through 2025?', yes:22, no:78, vol:'$560K', cat:'elections', id:'DE-SCHOLZ-25' },
+  { q:'Will Viktor Orban remain Hungary PM through end of 2025?', yes:81, no:19, vol:'$340K', cat:'elections', id:'HU-ORBAN-25' },
+
+  // ── TECHNOLOGY & AI ──
+  { q:'Will OpenAI release GPT-5 in 2025?', yes:62, no:38, vol:'$4.2M', cat:'tech', id:'OPENAI-GPT5-25' },
+  { q:'Will the US ban TikTok in 2025?', yes:31, no:69, vol:'$6.8M', cat:'tech', id:'US-TIKTOK-BAN-25' },
+  { q:'Will China impose new export controls on semiconductors in 2025?', yes:44, no:56, vol:'$2.1M', cat:'tech', id:'CN-SEMI-CTRL-25' },
+  { q:'Will a major AI regulation bill pass in the US in 2025?', yes:14, no:86, vol:'$3.1M', cat:'tech', id:'US-AI-REG-25' },
+  { q:'Will SpaceX complete a crewed Mars mission announcement in 2025?', yes:22, no:78, vol:'$1.8M', cat:'tech', id:'SPACEX-MARS-25' },
+  { q:'Will a major cyberattack hit US critical infrastructure in 2025?', yes:38, no:62, vol:'$1.4M', cat:'tech', id:'US-CYBER-CRIT-25' },
+
+  // ── ENERGY ──
+  { q:'Will the US become the world largest LNG exporter in 2025?', yes:68, no:32, vol:'$890K', cat:'energy', id:'US-LNG-TOP-25' },
+  { q:'Will a major nuclear power plant come online in the US in 2025?', yes:21, no:79, vol:'$560K', cat:'energy', id:'US-NUCLEAR-25' },
+  { q:'Will OPEC+ collapse or formally dissolve in 2025?', yes:6, no:94, vol:'$780K', cat:'energy', id:'OPEC-DISSOLVE-25' },
+  { q:'Will US oil production exceed 14 million bpd in 2025?', yes:44, no:56, vol:'$670K', cat:'energy', id:'US-OIL-14M-25' },
+  { q:'Will Germany restart any nuclear power plants in 2025?', yes:18, no:82, vol:'$430K', cat:'energy', id:'DE-NUCLEAR-25' },
 ];
 
 let allMarkets = [...KALSHI_MARKETS];
