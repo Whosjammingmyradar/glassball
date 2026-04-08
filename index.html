@@ -2911,147 +2911,209 @@ function renderPriceCards() {
   }).join('');
 }
 
-// ── STOOQ DATA FETCH ──
-async function fetchStooq(ticker, period) {
-  // Stooq returns CSV — we use a CORS proxy or direct fetch
-  // Stooq allows direct fetch from browser for daily data
-  const url = 'https://stooq.com/q/d/l/?s=' + ticker.toLowerCase() + '&i=d';
+// ── LIVE DATA VIA YAHOO FINANCE API ──
+// Yahoo Finance v8 chart endpoint — open CORS, no key required
+async function fetchYahoo(symbol, days) {
+  const period2 = Math.floor(Date.now() / 1000);
+  const period1 = period2 - (days * 24 * 60 * 60);
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(symbol) +
+    '?period1=' + period1 + '&period2=' + period2 + '&interval=1d&events=history&corsDomain=finance.yahoo.com';
   try {
-    const r = await fetch(url);
-    const text = await r.text();
-    const lines = text.trim().split('\n').slice(1); // skip header
-    const data = lines.map(l => {
-      const parts = l.split(',');
-      return { date: parts[0], close: parseFloat(parts[4]) };
-    }).filter(d => !isNaN(d.close));
-    return data.slice(-period);
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const json = await r.json();
+    const result = json.chart.result[0];
+    const timestamps = result.timestamp;
+    const closes = result.indicators.quote[0].close;
+    return timestamps.map((ts, i) => ({
+      date: new Date(ts * 1000).toISOString().slice(5, 10),
+      close: closes[i]
+    })).filter(d => d.close !== null && !isNaN(d.close));
   } catch(e) {
+    console.warn('Yahoo fetch failed for', symbol, e.message);
     return null;
   }
 }
 
-function makeChartConfig(data, color, fill) {
-  return {
-    type: 'line',
-    data: {
-      labels: data.map(d => d.date.slice(5)), // MM-DD
-      datasets: [{
-        data: data.map(d => d.close),
-        borderColor: color,
-        backgroundColor: fill || 'transparent',
-        borderWidth: 1.5,
-        pointRadius: 0,
-        tension: 0.3,
-        fill: !!fill,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        mode: 'index', intersect: false,
-        callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString() }
-      }},
-      scales: {
-        x: { grid: { color: '#2a2f3d' }, ticks: { maxTicksLimit: 6 } },
-        y: { grid: { color: '#2a2f3d' }, position: 'right', ticks: { callback: v => '$' + v.toLocaleString() } }
-      }
-    }
-  };
-}
+// Yahoo symbols
+const YAHOO_SYMBOLS = {
+  'WTI':   'CL=F',
+  'Brent': 'BZ=F',
+  'NatGas':'NG=F',
+  'Gold':  'GC=F',
+  'Silver':'SI=F',
+  'SPX':   '^GSPC',
+  'NDQ':   '^NDX',
+  'VIX':   '^VIX',
+  'DXY':   'DX-Y.NYB',
+  'T10Y':  '^TNX',
+  'EURUSD':'EURUSD=X',
+  'BTC':   'BTC-USD',
+};
+
+const PRICE_CARD_MAP = [
+  { label:'WTI Crude',     sym:'WTI',   suffix:'/bbl', color:'#c8a84b' },
+  { label:'Brent Crude',   sym:'Brent', suffix:'/bbl', color:'#c8a84b' },
+  { label:'Natural Gas',   sym:'NatGas',suffix:'/MMBtu',color:'#4b7fc8' },
+  { label:'Gold',          sym:'Gold',  suffix:'/oz',  color:'#f0d060' },
+  { label:'Silver',        sym:'Silver',suffix:'/oz',  color:'#b0b8d0' },
+  { label:'S&P 500',       sym:'SPX',   suffix:'',     color:'#4bc87a' },
+  { label:'Nasdaq 100',    sym:'NDQ',   suffix:'',     color:'#4bc87a' },
+  { label:'VIX',           sym:'VIX',   suffix:'',     color:'#c84b4b' },
+  { label:'DXY (Dollar)',  sym:'DXY',   suffix:'',     color:'#4b7fc8' },
+  { label:'10Y Treasury',  sym:'T10Y',  suffix:'%',    color:'#7a8099' },
+  { label:'EUR/USD',       sym:'EURUSD',suffix:'',     color:'#4b7fc8' },
+  { label:'Bitcoin',       sym:'BTC',   suffix:'',     color:'#f7931a' },
+];
 
 let econCharts = {};
+let liveData = {};
 
 function destroyChart(id) {
   if (econCharts[id]) { econCharts[id].destroy(); delete econCharts[id]; }
 }
 
-async function loadEconCharts() {
-  // Load price cards with latest closes
-  for (const inst of PRICE_INSTRUMENTS) {
-    const data = await fetchStooq(inst.ticker, 2);
-    if (data && data.length >= 2) {
-      const latest = data[data.length - 1].close;
-      const prev = data[data.length - 2].close;
-      priceData[inst.ticker] = {
-        close: latest.toFixed(2),
-        change: ((latest - prev) / prev) * 100
-      };
+function makeChart(canvasId, data, color, fillColor, yFmt) {
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !data || data.length < 2) return;
+  const cfg = {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date),
+      datasets: [{
+        data: data.map(d => d.close),
+        borderColor: color,
+        backgroundColor: fillColor || 'transparent',
+        borderWidth: 1.8,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: !!fillColor,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index', intersect: false,
+          backgroundColor: '#13161b',
+          borderColor: '#2a2f3d',
+          borderWidth: 1,
+          callbacks: { label: ctx => ' ' + yFmt(ctx.parsed.y) }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#1e2230' }, ticks: { maxTicksLimit: 6, color: '#7a8099', font: { size: 10 } } },
+        y: { grid: { color: '#1e2230' }, position: 'right', ticks: { color: '#7a8099', font: { size: 10 }, callback: yFmt } }
+      }
     }
-  }
-  renderPriceCards();
+  };
+  econCharts[canvasId] = new Chart(canvas, cfg);
+}
 
-  // Oil chart
-  const oilData = await fetchStooq('CL.F', 30);
+function updateBadge(id, val, fmt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = fmt ? fmt(val) : val;
+}
+
+async function loadEconCharts() {
+  // Show loading state on cards
+  const cardsEl = document.getElementById('price-cards');
+  if (cardsEl) {
+    cardsEl.innerHTML = PRICE_CARD_MAP.map(inst =>
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:10px 12px">' +
+      '<div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.08em">' + inst.label + '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:' + inst.color + '" id="card-' + inst.sym + '">loading…</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-top:2px" id="chg-' + inst.sym + '">—</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  // Fetch all instruments in parallel
+  const fetches = {};
+  for (const inst of PRICE_CARD_MAP) {
+    fetches[inst.sym] = fetchYahoo(YAHOO_SYMBOLS[inst.sym], 35);
+  }
+  const results = {};
+  for (const [sym, promise] of Object.entries(fetches)) {
+    results[sym] = await promise;
+  }
+
+  // Update price cards
+  for (const inst of PRICE_CARD_MAP) {
+    const data = results[inst.sym];
+    const cardEl = document.getElementById('card-' + inst.sym);
+    const chgEl = document.getElementById('chg-' + inst.sym);
+    if (!cardEl) continue;
+    if (!data || data.length < 2) {
+      cardEl.textContent = '—';
+      if (chgEl) { chgEl.textContent = 'unavailable'; chgEl.style.color = 'var(--text-dim)'; }
+      continue;
+    }
+    const latest = data[data.length - 1].close;
+    const prev = data[data.length - 2].close;
+    const chgPct = ((latest - prev) / prev) * 100;
+    const isUp = chgPct >= 0;
+    const fmt = inst.suffix === '%' ? v => v.toFixed(2) + '%' : v => (v >= 1000 ? v.toLocaleString(undefined,{maximumFractionDigits:0}) : v.toFixed(2));
+    cardEl.textContent = (inst.suffix !== '%' && latest > 0.1 ? '$' : '') + fmt(latest) + (inst.suffix !== '%' ? '' : '');
+    if (chgEl) {
+      chgEl.textContent = (isUp ? '▲ +' : '▼ ') + chgPct.toFixed(2) + '%';
+      chgEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+    }
+    liveData[inst.sym] = data;
+  }
+
+  // Draw main charts
+  const oilData = results['WTI'];
+  const goldData = results['Gold'];
+  const spxData  = results['SPX'];
+  const vixData  = results['VIX'];
+
   if (oilData) {
-    destroyChart('oil');
-    const badge = document.getElementById('oil-last');
-    if (badge) badge.textContent = '$' + oilData[oilData.length-1].close.toFixed(2);
-    const cfg = makeChartConfig(oilData, '#c8a84b', 'rgba(200,168,75,0.08)');
-    cfg.options.scales.y.ticks.callback = v => '$' + v.toFixed(0);
-    econCharts['oil'] = new Chart(document.getElementById('chart-oil'), cfg);
+    updateBadge('oil-last', oilData[oilData.length-1].close, v => '$' + v.toFixed(2));
+    makeChart('chart-oil', oilData, '#c8a84b', 'rgba(200,168,75,0.08)', v => '$' + v.toFixed(0));
   }
-
-  // Gold chart
-  const goldData = await fetchStooq('GC.F', 30);
   if (goldData) {
-    destroyChart('gold');
-    const badge = document.getElementById('gold-last');
-    if (badge) badge.textContent = '$' + goldData[goldData.length-1].close.toFixed(0);
-    const cfg = makeChartConfig(goldData, '#f0d060', 'rgba(240,208,96,0.06)');
-    cfg.options.scales.y.ticks.callback = v => '$' + v.toLocaleString();
-    econCharts['gold'] = new Chart(document.getElementById('chart-gold'), cfg);
+    updateBadge('gold-last', goldData[goldData.length-1].close, v => '$' + v.toLocaleString(undefined,{maximumFractionDigits:0}));
+    makeChart('chart-gold', goldData, '#f0d060', 'rgba(240,208,96,0.06)', v => '$' + v.toLocaleString(undefined,{maximumFractionDigits:0}));
   }
-
-  // S&P 500
-  const spxData = await fetchStooq('^SPX', 30);
   if (spxData) {
-    destroyChart('spx');
-    const badge = document.getElementById('spx-last');
-    if (badge) badge.textContent = spxData[spxData.length-1].close.toLocaleString();
-    const cfg = makeChartConfig(spxData, '#4bc87a', 'rgba(75,200,122,0.06)');
-    cfg.options.scales.y.ticks.callback = v => v.toLocaleString();
-    cfg.data.datasets[0].data = spxData.map(d => d.close);
-    econCharts['spx'] = new Chart(document.getElementById('chart-spx'), cfg);
+    updateBadge('spx-last', spxData[spxData.length-1].close, v => v.toLocaleString(undefined,{maximumFractionDigits:0}));
+    makeChart('chart-spx', spxData, '#4bc87a', 'rgba(75,200,122,0.06)', v => v.toLocaleString(undefined,{maximumFractionDigits:0}));
   }
-
-  // VIX
-  const vixData = await fetchStooq('^VIX', 30);
   if (vixData) {
-    destroyChart('vix');
-    const badge = document.getElementById('vix-last');
-    if (badge) badge.textContent = vixData[vixData.length-1].close.toFixed(2);
-    const cfg = makeChartConfig(vixData, '#c84b4b', 'rgba(200,75,75,0.08)');
-    cfg.options.scales.y.ticks.callback = v => v.toFixed(1);
-    econCharts['vix'] = new Chart(document.getElementById('chart-vix'), cfg);
+    updateBadge('vix-last', vixData[vixData.length-1].close, v => v.toFixed(2));
+    makeChart('chart-vix', vixData, '#c84b4b', 'rgba(200,75,75,0.08)', v => v.toFixed(1));
   }
 
-  // Defense vs S&P spread (simulated from ITA/SPX ratio)
-  if (oilData && goldData) {
-    // Gold/Oil ratio chart
-    destroyChart('ratio');
-    const minLen = Math.min(oilData.length, goldData.length);
-    const ratioData = oilData.slice(-minLen).map((d, i) => ({
+  // Gold/Oil ratio
+  if (goldData && oilData) {
+    const minLen = Math.min(goldData.length, oilData.length);
+    const ratioData = goldData.slice(-minLen).map((d, i) => ({
       date: d.date,
-      close: goldData[goldData.length - minLen + i].close / d.close
+      close: d.close / oilData[oilData.length - minLen + i].close
     }));
-    const cfg = makeChartConfig(ratioData, '#4b7fc8', 'rgba(75,127,200,0.07)');
-    cfg.options.scales.y.ticks.callback = v => v.toFixed(1) + 'x';
-    cfg.options.plugins.tooltip.callbacks.label = ctx => ' ' + ctx.parsed.y.toFixed(2) + 'x';
-    econCharts['ratio'] = new Chart(document.getElementById('chart-ratio'), cfg);
+    makeChart('chart-ratio', ratioData, '#4b7fc8', 'rgba(75,127,200,0.07)', v => v.toFixed(1) + 'x');
+  }
 
-    // Defense spread — simulated using oil as proxy for now
-    destroyChart('defense');
-    const defData = oilData.map((d, i) => ({
+  // Defense spread — ITA vs SPX (fetch ITA separately)
+  const itaData = await fetchYahoo('ITA', 35);
+  if (itaData && spxData) {
+    const minLen = Math.min(itaData.length, spxData.length);
+    const baseIta = itaData[itaData.length - minLen].close;
+    const baseSpx = spxData[spxData.length - minLen].close;
+    const spreadData = itaData.slice(-minLen).map((d, i) => ({
       date: d.date,
-      close: 100 + (i * 0.3) + (Math.sin(i * 0.4) * 2.5) // representative trend
+      close: ((d.close / baseIta) - (spxData[spxData.length - minLen + i].close / baseSpx)) * 100
     }));
-    const cfgDef = makeChartConfig(defData, '#4bc87a', 'rgba(75,200,122,0.06)');
-    cfgDef.options.scales.y.ticks.callback = v => v.toFixed(1);
-    econCharts['defense'] = new Chart(document.getElementById('chart-defense'), cfgDef);
+    makeChart('chart-defense', spreadData, '#4bc87a', 'rgba(75,200,122,0.06)', v => v.toFixed(2) + '%');
   }
 }
 
+// ── SANCTIONS LIST ──
 // ── SANCTIONS LIST ──
 let sanctionsList = LSGet('sanctions', [
   { entity:'14 Iranian Petrochemical Entities', type:'OFAC SDN', date:'2026-04', authority:'US Treasury', notes:'Secondary sanctions risk — Chinese buyers flagged' },
