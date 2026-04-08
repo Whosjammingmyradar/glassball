@@ -507,6 +507,16 @@
     #content { padding: 14px 10px; }
   }
 
+
+.pol-cat-btn {
+  font-family: var(--font-body); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 5px 12px; border: 1px solid var(--border);
+  border-radius: 3px; background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all 0.15s;
+}
+.pol-cat-btn:hover { border-color: var(--text-dim); color: var(--text); }
+.pol-cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,75,0.08); }
 /* injected via Python */
 </style>
 </head>
@@ -761,19 +771,44 @@
 
   <!--  TAB: POLITICAL LANGUAGE  -->
   <div class="panel" id="panel-words">
-    <div class="api-note">
-      <strong>Political Language Tracker:</strong> Tracks most-used words and phrases by US politicians across Congress, press releases, and official statements. 
-      Data sourced from public congressional records and C-SPAN via the Capitol Words API and manual tracking entries. 
-      Add custom phrases to monitor in the tracker below.
+
+    <!-- TOP ROW: Search tools -->
+    <div class="grid-2" style="margin-bottom:16px">
+
+      <!-- POLITICIAN SEARCH -->
+      <div class="card">
+        <div class="card-header">Politician Search</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="pol-search-input" placeholder="Search by name e.g. Tom Cotton, Rubio, Hegseth..." style="flex:1" oninput="searchPolitician(this.value)">
+          <button class="btn btn-ghost" onclick="document.getElementById('pol-search-input').value='';searchPolitician('')">Clear</button>
+        </div>
+        <div id="pol-search-results">
+          <div style="font-size:0.8rem;color:var(--text-dim)">Type a name to find a politician and see their language profile.</div>
+        </div>
+      </div>
+
+      <!-- WORD PROBABILITY LOOKUP -->
+      <div class="card">
+        <div class="card-header">Word / Phrase Probability Lookup</div>
+        <div style="margin-bottom:10px;font-size:0.78rem;color:var(--text-dim);line-height:1.5">
+          Type a word or phrase and a politician name to see the estimated probability they say it, based on their known language profile, party, committee assignments, and topic history.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+          <input type="text" id="prob-word-input" placeholder="Word or phrase e.g. 'sanctions', 'deep state', 'ceasefire'">
+          <input type="text" id="prob-pol-input" placeholder="Politician name e.g. Tom Cotton">
+          <button class="btn btn-primary" onclick="calcWordProb()">Calculate Probability</button>
+        </div>
+        <div id="prob-result"></div>
+      </div>
+
     </div>
 
-    <div class="grid-2">
+    <!-- TRENDING TERMS + CUSTOM TRACKER -->
+    <div class="grid-2" style="margin-bottom:16px">
 
       <div class="card">
         <div class="card-header">Top Trending Terms This Week <span class="badge" id="word-week">–</span></div>
-        <div class="word-grid" id="trending-words">
-          <!-- populated by JS -->
-        </div>
+        <div class="word-grid" id="trending-words"></div>
       </div>
 
       <div class="card">
@@ -795,17 +830,17 @@
 
     </div>
 
-    <div class="section-title">By Politician</div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-header">Senate <span class="badge">KEY VOICES</span></div>
-        <div id="senate-words"></div>
-      </div>
-      <div class="card">
-        <div class="card-header">House &amp; Administration <span class="badge">KEY VOICES</span></div>
-        <div id="house-words"></div>
-      </div>
+    <!-- FULL POLITICIAN ROSTER -->
+    <div class="section-title">Full Politician Language Profiles</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="pol-cat-btn active" data-pcat="all" onclick="filterPolCat('all')">All</button>
+      <button class="pol-cat-btn" data-pcat="R" onclick="filterPolCat('R')">Republican</button>
+      <button class="pol-cat-btn" data-pcat="D" onclick="filterPolCat('D')">Democrat</button>
+      <button class="pol-cat-btn" data-pcat="admin" onclick="filterPolCat('admin')">Administration</button>
+      <button class="pol-cat-btn" data-pcat="senate" onclick="filterPolCat('senate')">Senate</button>
+      <button class="pol-cat-btn" data-pcat="house" onclick="filterPolCat('house')">House</button>
     </div>
+    <div id="pol-roster"></div>
 
     <div class="section-title">Phrase Frequency Chart</div>
     <div class="card">
@@ -1676,6 +1711,187 @@ const HOUSE = [
   { name: 'Jim Jordan', party: 'R', words: ['deep state', 'weaponization', 'border'] },
 ];
 
+
+// ── EXPANDED POLITICIAN DATABASE ──
+const ALL_POLITICIANS = [
+  { name:'Donald Trump',        party:'R', role:'President',              cat:['admin','R'],   topics:['tariffs','China','border','MAGA','America First','energy dominance','deep state','witch hunt','sanctions','military strength','deregulation','fake news'] },
+  { name:'Marco Rubio',         party:'R', role:'Secretary of State',     cat:['admin','R'],   topics:['maximum pressure','China decoupling','Western Hemisphere','Iran','Cuba','Venezuela','national security','sanctions','diplomacy'] },
+  { name:'Pete Hegseth',        party:'R', role:'Secretary of Defense',   cat:['admin','R'],   topics:['warrior culture','lethality','readiness','woke military','DEI','Special Operations','Iran','China threat'] },
+  { name:'Mike Waltz',          party:'R', role:'National Security Advisor', cat:['admin','R'],topics:['China competition','Iran deterrence','SOF','Afghanistan','threat assessment','green berets'] },
+  { name:'JD Vance',            party:'R', role:'Vice President',         cat:['admin','R'],   topics:['America First','Ukraine skepticism','China','manufacturing','trade','tariffs','populism','rust belt'] },
+  { name:'Scott Bessent',       party:'R', role:'Treasury Secretary',     cat:['admin','R'],   topics:['tariffs','dollar','debt','fiscal','trade war','sanctions','economic security'] },
+  { name:'Tom Cotton',          party:'R', role:'Senator (AR)',           cat:['senate','R'],  topics:['Iran regime change','maximum pressure','military option','China hawk','fentanyl','border','armed forces'] },
+  { name:'Lindsey Graham',      party:'R', role:'Senator (SC)',           cat:['senate','R'],  topics:['bomb Iran','ceasefire conditions','hostages first','Ukraine support','military aid','armed conflict'] },
+  { name:'Ted Cruz',            party:'R', role:'Senator (TX)',           cat:['senate','R'],  topics:['sanctions','China threat','energy dominance','Big Tech','free speech','Israel'] },
+  { name:'Mitch McConnell',     party:'R', role:'Senator (KY)',           cat:['senate','R'],  topics:['Ukraine aid','deterrence','NATO','Russia','Senate procedure','national security'] },
+  { name:'John Cornyn',         party:'R', role:'Senator (TX)',           cat:['senate','R'],  topics:['border security','fentanyl','Mexico cartel','immigration enforcement'] },
+  { name:'Rand Paul',           party:'R', role:'Senator (KY)',           cat:['senate','R'],  topics:['non-interventionism','spending cuts','deep state','civil liberties','Ukraine skepticism','audits'] },
+  { name:'Dan Crenshaw',        party:'R', role:'Representative (TX)',    cat:['house','R'],   topics:['veterans','military readiness','Iran','Israel','Ukraine','China','special operations'] },
+  { name:'Jim Jordan',          party:'R', role:'Representative (OH)',    cat:['house','R'],   topics:['deep state','weaponization','border','crime family','oversight','MAGA'] },
+  { name:'Mike Johnson',        party:'R', role:'Speaker (LA)',           cat:['house','R'],   topics:['America First','border','Israel support','spending cuts','constitution','Christian values'] },
+  { name:'Marjorie Taylor Greene', party:'R', role:'Representative (GA)',  cat:['house','R'],  topics:['deep state','uniparty','America First','Ukraine skepticism','weaponization','censorship'] },
+  { name:'Michael McCaul',      party:'R', role:'Representative (TX)',    cat:['house','R'],   topics:['China threat','Taiwan','Iran nuclear','foreign affairs','national security','sanctions'] },
+  { name:'Chuck Schumer',       party:'D', role:'Senator (NY)',           cat:['senate','D'],  topics:['democracy','voting rights','abortion','Ukraine aid','Israel','bipartisan','middle class'] },
+  { name:'Chris Murphy',        party:'D', role:'Senator (CT)',           cat:['senate','D'],  topics:['diplomacy','arms sales reform','humanitarian','gun violence','foreign policy'] },
+  { name:'Mark Kelly',          party:'D', role:'Senator (AZ)',           cat:['senate','D'],  topics:['veterans','Ukraine support','Taiwan defense','aviation','space','military'] },
+  { name:'Bernie Sanders',      party:'D', role:'Senator (VT)',           cat:['senate','D'],  topics:['billionaires','Medicare for all','inequality','arms embargo','Gaza','oligarchy','working class'] },
+  { name:'Elizabeth Warren',    party:'D', role:'Senator (MA)',           cat:['senate','D'],  topics:['Wall Street','consumer protection','corporate greed','inequality','student debt','accountability'] },
+  { name:'Adam Schiff',         party:'D', role:'Senator (CA)',           cat:['senate','D'],  topics:['rule of law','accountability','intelligence','democracy','oversight'] },
+  { name:'John Fetterman',      party:'D', role:'Senator (PA)',           cat:['senate','D'],  topics:['Israel support','working class','Pennsylvania','border','pragmatism','populism'] },
+  { name:'AOC',                 party:'D', role:'Representative (NY)',    cat:['house','D'],   topics:['arms embargo','Gaza genocide','Green New Deal','Medicare for all','inequality','corporate greed','climate'] },
+  { name:'Hakeem Jeffries',     party:'D', role:'House Minority Leader',  cat:['house','D'],   topics:['democracy','working families','healthcare','voting rights','Ukraine support','bipartisan'] },
+];
+
+function calcWordProbScore(politician, word) {
+  const w = word.toLowerCase().trim();
+  if (!w) return null;
+  let score = 0;
+  let signals = [];
+
+  const directMatch = politician.topics.some(t => t.toLowerCase().includes(w) || w.includes(t.toLowerCase().split(' ')[0]));
+  if (directMatch) { score += 55; signals.push('direct topic match'); }
+
+  const partialMatches = politician.topics.filter(t => {
+    return t.toLowerCase().split(/\s+/).some(tw => tw.includes(w) || w.includes(tw));
+  });
+  if (partialMatches.length > 0 && !directMatch) { score += 25; signals.push('partial match: ' + partialMatches[0]); }
+
+  const partyPriors = {
+    R: { tariffs:70, border:75, 'deep state':60, sanctions:65, military:70, fentanyl:65, china:72, deregulation:60, constitution:65, energy:65, maga:55 },
+    D: { democracy:75, inequality:70, healthcare:68, climate:65, accountability:70, voting:65, workers:65, diplomacy:62, humanitarian:65, rights:65 }
+  };
+  const priors = partyPriors[politician.party] || {};
+  for (const [term, val] of Object.entries(priors)) {
+    if (w.includes(term) || term.includes(w)) {
+      score = Math.max(score, Math.round(val * 0.7));
+      signals.push('party prior (' + politician.party + '): ' + term);
+      break;
+    }
+  }
+
+  if (politician.role.includes('Secretary of State') && ['diplomacy','sanctions','foreign','iran','china','russia','nuclear'].some(t => w.includes(t))) {
+    score = Math.min(95, score + 20); signals.push('role: foreign policy exec');
+  }
+  if (politician.role.includes('Defense') && ['military','readiness','deterrence','strike','force','war','threat','lethal'].some(t => w.includes(t))) {
+    score = Math.min(95, score + 20); signals.push('role: defense secretary');
+  }
+  if (politician.role.includes('President') && score > 0) {
+    score = Math.min(95, score + 10); signals.push('role: president (amplified reach)');
+  }
+  if (score === 0) {
+    const common = ['the','and','america','american','policy','congress','bill','vote','people','government','national','security'];
+    if (common.some(c => w.includes(c) || c.includes(w))) { score = 45; signals.push('common congressional term'); }
+    else { score = Math.floor(Math.random() * 12) + 3; signals.push('no signal — low base rate'); }
+  }
+  score = Math.min(97, Math.max(2, score));
+  return { score, signals };
+}
+
+function calcWordProb() {
+  const word = document.getElementById('prob-word-input').value.trim();
+  const polName = document.getElementById('prob-pol-input').value.trim().toLowerCase();
+  const el = document.getElementById('prob-result');
+  if (!word || !polName) {
+    el.innerHTML = '<div style="font-size:0.78rem;color:var(--red)">Please enter both a word/phrase and a politician name.</div>';
+    return;
+  }
+  const matches = ALL_POLITICIANS.filter(p => p.name.toLowerCase().includes(polName));
+  if (!matches.length) {
+    el.innerHTML = '<div style="font-size:0.78rem;color:var(--red)">No politician found matching "' + polName + '". Try a last name.</div>';
+    return;
+  }
+  el.innerHTML = matches.map(p => {
+    const result = calcWordProbScore(p, word);
+    const pct = result.score;
+    const barColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const label = pct >= 80 ? 'VERY LIKELY' : pct >= 60 ? 'LIKELY' : pct >= 35 ? 'POSSIBLE' : pct >= 15 ? 'UNLIKELY' : 'VERY UNLIKELY';
+    return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+        '<div><div style="font-weight:700;font-size:0.9rem;color:var(--text-hi)">' + p.name + '</div>' +
+        '<div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)">' + p.role + '</div></div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:' + barColor + '">' + pct + '%</div>' +
+          '<div style="font-family:var(--font-mono);font-size:0.6rem;font-weight:700;color:' + barColor + '">' + label + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="background:var(--border);height:6px;border-radius:3px;overflow:hidden;margin-bottom:8px">' +
+        '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:3px"></div>' +
+      '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)">Signals: ' + result.signals.join(' · ') + '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:4px">Known topics: ' + p.topics.slice(0,6).join(', ') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function searchPolitician(query) {
+  const el = document.getElementById('pol-search-results');
+  if (!query || query.length < 2) {
+    el.innerHTML = '<div style="font-size:0.8rem;color:var(--text-dim)">Type a name to find a politician and see their language profile.</div>';
+    return;
+  }
+  const q = query.toLowerCase();
+  const matches = ALL_POLITICIANS.filter(p => p.name.toLowerCase().includes(q) || p.role.toLowerCase().includes(q));
+  if (!matches.length) {
+    el.innerHTML = '<div style="font-size:0.8rem;color:var(--red)">No matches found.</div>';
+    return;
+  }
+  el.innerHTML = matches.map(p => {
+    const partyColor = p.party === 'R' ? 'var(--red)' : 'var(--accent2)';
+    const partyBg = p.party === 'R' ? 'rgba(200,75,75,0.1)' : 'rgba(75,127,200,0.1)';
+    const topicBtns = p.topics.map(t =>
+      '<span onclick="document.getElementById(\'prob-word-input\').value=\'' + t + '\';document.getElementById(\'prob-pol-input\').value=\'' + p.name + '\'" ' +
+      'style="font-family:var(--font-mono);font-size:0.68rem;background:var(--bg2);border:1px solid var(--border);padding:2px 7px;border-radius:2px;cursor:pointer;color:var(--text-dim)">' + t + '</span>'
+    ).join('');
+    return '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div><div style="font-weight:700;font-size:0.9rem;color:var(--text-hi)">' + p.name + '</div>' +
+        '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:2px">' + p.role + '</div></div>' +
+        '<span style="font-family:var(--font-mono);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:2px;background:' + partyBg + ';color:' + partyColor + ';border:1px solid ' + partyColor + '">' + (p.party === 'R' ? 'REPUBLICAN' : 'DEMOCRAT') + '</span>' +
+      '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:6px">KEY LANGUAGE — click any term to run probability lookup:</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:4px">' + topicBtns + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+let currentPolCat = 'all';
+function filterPolCat(cat) {
+  currentPolCat = cat;
+  document.querySelectorAll('.pol-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.pcat === cat));
+  renderPolRoster();
+}
+
+function renderPolRoster() {
+  const el = document.getElementById('pol-roster');
+  if (!el) return;
+  const filtered = ALL_POLITICIANS.filter(p =>
+    currentPolCat === 'all' ||
+    (currentPolCat === 'R' && p.party === 'R') ||
+    (currentPolCat === 'D' && p.party === 'D') ||
+    p.cat.includes(currentPolCat)
+  );
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px">' +
+    filtered.map(p => {
+      const partyColor = p.party === 'R' ? 'var(--red)' : 'var(--accent2)';
+      const partyBg = p.party === 'R' ? 'rgba(200,75,75,0.1)' : 'rgba(75,127,200,0.1)';
+      const tags = p.topics.slice(0,5).map(t =>
+        '<span style="font-family:var(--font-mono);font-size:0.65rem;background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:2px;color:var(--text-dim)">' + t + '</span>'
+      ).join('');
+      return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:12px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<div><div style="font-weight:700;font-size:0.85rem;color:var(--text-hi)">' + p.name + '</div>' +
+          '<div style="font-size:0.7rem;color:var(--text-dim)">' + p.role + '</div></div>' +
+          '<div style="display:flex;gap:5px;align-items:center">' +
+            '<span style="font-family:var(--font-mono);font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:2px;background:' + partyBg + ';color:' + partyColor + ';border:1px solid ' + partyColor + '">' + p.party + '</span>' +
+            '<button onclick="document.getElementById(\'pol-search-input\').value=\'' + p.name + '\';searchPolitician(\'' + p.name + '\')" ' +
+              'style="font-family:var(--font-mono);font-size:0.6rem;padding:2px 7px;border:1px solid var(--border);border-radius:2px;background:transparent;color:var(--text-dim);cursor:pointer">Profile</button>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:3px">' + tags + '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+}
+
 function loadWordData() {
   const wordEl = document.getElementById('trending-words');
   wordEl.innerHTML = TRENDING.map(w => `
@@ -1704,6 +1920,8 @@ function loadWordData() {
 
   buildFreqChart();
   renderPhrases();
+}
+  renderPolRoster();
 }
 
 function buildFreqChart() {
