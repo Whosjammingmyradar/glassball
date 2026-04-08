@@ -905,25 +905,25 @@
     <div id="price-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px"></div>
 
     <!-- MAIN OIL CHART -->
-    <div class="grid-2" style="margin-bottom:20px">
-      <div class="card" style="padding:14px">
-        <div class="card-header">WTI Crude Oil — 30 Day <span class="badge" id="oil-last">loading…</span></div>
-        <canvas id="chart-oil" height="120"></canvas>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">WTI Crude Oil — 30 Day <span class="badge" id="oil-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-oil"></canvas></div>
       </div>
-      <div class="card" style="padding:14px">
-        <div class="card-header">Gold — 30 Day <span class="badge" id="gold-last">loading…</span></div>
-        <canvas id="chart-gold" height="120"></canvas>
+      <div class="card" style="padding:12px">
+        <div class="card-header">Gold — 30 Day <span class="badge" id="gold-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-gold"></canvas></div>
       </div>
     </div>
 
-    <div class="grid-2" style="margin-bottom:20px">
-      <div class="card" style="padding:14px">
-        <div class="card-header">S&amp;P 500 — 30 Day <span class="badge" id="spx-last">loading…</span></div>
-        <canvas id="chart-spx" height="120"></canvas>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">S&amp;P 500 — 30 Day <span class="badge" id="spx-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-spx"></canvas></div>
       </div>
-      <div class="card" style="padding:14px">
-        <div class="card-header">VIX Fear Index — 30 Day <span class="badge" id="vix-last">loading…</span></div>
-        <canvas id="chart-vix" height="120"></canvas>
+      <div class="card" style="padding:12px">
+        <div class="card-header">VIX Fear Index — 30 Day <span class="badge" id="vix-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-vix"></canvas></div>
       </div>
     </div>
 
@@ -944,20 +944,16 @@
     </div>
 
     <!-- DEFENSE VS MARKET SPREAD -->
-    <div class="grid-2" style="margin-bottom:20px">
-      <div class="card" style="padding:14px">
-        <div class="card-header">Defense Sector (ITA ETF) vs S&amp;P 500 — Spread</div>
-        <canvas id="chart-defense" height="120"></canvas>
-        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:8px">
-          Positive spread = defense outperforming — conflict escalation signal
-        </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">Defense (ITA) vs S&amp;P 500 — Spread</div>
+        <div style="position:relative;height:140px"><canvas id="chart-defense"></canvas></div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:6px">Positive = defense outperforming — conflict escalation signal</div>
       </div>
-      <div class="card" style="padding:14px">
+      <div class="card" style="padding:12px">
         <div class="card-header">Gold / Oil Ratio — Risk Gauge</div>
-        <canvas id="chart-ratio" height="120"></canvas>
-        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:8px">
-          Rising ratio = risk-off / geopolitical fear. Falling = supply disruption dominant.
-        </div>
+        <div style="position:relative;height:140px"><canvas id="chart-ratio"></canvas></div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:6px">Rising = risk-off / geopolitical fear dominant</div>
       </div>
     </div>
 
@@ -2992,7 +2988,7 @@ function makeChart(canvasId, data, color, fillColor, yFmt) {
         data: data.map(d => d.close),
         borderColor: color,
         backgroundColor: fillColor || 'transparent',
-        borderWidth: 1.8,
+        borderWidth: 1.5,
         pointRadius: 0,
         tension: 0.3,
         fill: !!fillColor,
@@ -3001,7 +2997,7 @@ function makeChart(canvasId, data, color, fillColor, yFmt) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 500 },
+      animation: false,
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -3012,9 +3008,9 @@ function makeChart(canvasId, data, color, fillColor, yFmt) {
         }
       },
       scales: {
-        x: { grid: { color: '#1e2230' }, ticks: { maxTicksLimit: 6, color: '#7a8099', font: { size: 10 } } },
+        x: { grid: { color: '#1e2230' }, ticks: { maxTicksLimit: 5, color: '#7a8099', font: { size: 10 } } },
         y: { grid: { color: '#1e2230' }, position: 'right',
-          ticks: { color: '#7a8099', font: { size: 10 }, callback: yFmt || (v => v.toFixed(2)) } }
+          ticks: { maxTicksLimit: 4, color: '#7a8099', font: { size: 10 }, callback: yFmt || (v => v.toFixed(2)) } }
       }
     }
   });
