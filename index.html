@@ -579,9 +579,9 @@
     <div class="grid-3">
 
       <!-- Region Status -->
-      <div class="card">
-        <div class="card-header">Regional Threat Matrix <span class="badge" id="matrix-ts">–</span></div>
-        <div class="region-map" id="region-matrix">
+      <div class="card col-span-3">
+        <div class="card-header">Regional Threat Matrix — Click any region to expand <span class="badge" id="matrix-ts">–</span></div>
+        <div id="region-matrix" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
           <!-- populated by JS -->
         </div>
       </div>
@@ -610,13 +610,19 @@
 
     </div>
 
-    <!-- Key Developments -->
-    <div class="section-title">Flagged Developments</div>
+    <!-- Watchlist Alerts -->
+    <div class="section-title">Watchlist Alerts</div>
     <div class="grid-2">
       <div class="card">
-        <div class="card-header">Analyst Notes <span class="badge">PERSONAL</span></div>
-        <div id="flagged-notes" class="feed-container" style="max-height:240px">
-          <div class="empty-state">Right-click any news item to flag it</div>
+        <div class="card-header">Keyword Watchlist <span class="badge">PERSONAL</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input type="text" id="watchlist-input" placeholder="Add keyword e.g. Hormuz, IRGC, ceasefire..." style="flex:1" onkeydown="if(event.key==='Enter')addWatchword()">
+          <button class="btn btn-primary" style="padding:5px 12px;font-size:0.75rem" onclick="addWatchword()">Add</button>
+        </div>
+        <div id="watchlist-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px"></div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em">MATCHED HEADLINES</div>
+        <div id="watchlist-hits" class="feed-container" style="max-height:180px">
+          <div class="empty-state" style="font-size:0.78rem">Add keywords above to monitor the news feed</div>
         </div>
       </div>
       <div class="card">
@@ -1227,26 +1233,145 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 //  REGION MATRIX 
 const regions = [
-  { name: 'Middle East', threat: 92, level: 'threat-critical' },
-  { name: 'Eastern Europe', threat: 88, level: 'threat-critical' },
-  { name: 'Gaza / West Bank', threat: 80, level: 'threat-high' },
-  { name: 'Red Sea', threat: 75, level: 'threat-high' },
-  { name: 'Taiwan Strait', threat: 52, level: 'threat-mod' },
-  { name: 'Sahel / Sudan', threat: 70, level: 'threat-high' },
-  { name: 'Korean Peninsula', threat: 35, level: 'threat-low' },
-  { name: 'Venezuela', threat: 40, level: 'threat-mod' },
-  { name: 'South China Sea', threat: 50, level: 'threat-mod' },
+  {
+    name: 'Middle East', threat: 92, trend: 'up', incidents: 47,
+    driver: 'US-Iran hostilities, IRGC missile deployments, 5th Fleet elevated',
+    subs: { military: 96, terrorism: 88, political: 90, economic: 85 },
+    detail: 'Operation Epic Fury ongoing. IRGC ballistic missile units repositioned along Zagros Range. US carrier strike group in Arabian Sea. Strait of Hormuz throughput under watch. Iran enrichment at 142kg of 60% U-235.',
+    kalshi: 'IRAN-USSTRIKE-JUL25'
+  },
+  {
+    name: 'Eastern Europe', threat: 88, trend: 'stable', incidents: 38,
+    driver: 'Russia-Ukraine war, NATO eastern flank buildup, Kaliningrad S-500',
+    subs: { military: 95, terrorism: 45, political: 80, economic: 82 },
+    detail: 'Russia maintaining pressure across 1,000km front. Ukraine FPV drone strikes on Black Sea Fleet HQ. German Bundeswehr €17B emergency supplement approved. Russian S-500 claimed operational near Kaliningrad.',
+    kalshi: 'UA-KHARKIV-2025'
+  },
+  {
+    name: 'Gaza / West Bank', threat: 80, trend: 'stable', incidents: 29,
+    driver: 'IDF operations, Hamas rocket fire, hostage negotiations stalled',
+    subs: { military: 88, terrorism: 82, political: 75, economic: 70 },
+    detail: 'IDF ground operations continuing in Rafah. Hamas military capacity degraded but not eliminated. Hostage deal negotiations stalled. West Bank settler violence at record levels. Hezbollah cross-border shelling resumed.',
+    kalshi: 'GAZA-CEASEFIRE-JUN25'
+  },
+  {
+    name: 'Red Sea / Bab el-Mandeb', threat: 75, trend: 'up', incidents: 22,
+    driver: 'Houthi anti-ship attacks, US/UK naval operations, rerouting costs',
+    subs: { military: 80, terrorism: 72, political: 55, economic: 90 },
+    detail: 'Houthi attacks ongoing — 2 ASMs fired at MV Pacific Emerald this week. Major carriers rerouting via Cape of Good Hope adding 14 days. Insurance premium +280% vs baseline. US strikes on Houthi infrastructure continuing.',
+    kalshi: 'HOUTHI-REDSEA-JUN25'
+  },
+  {
+    name: 'Taiwan Strait', threat: 52, trend: 'up', incidents: 11,
+    driver: 'PLA unannounced live-fire exercise 60nm from median line',
+    subs: { military: 65, terrorism: 10, political: 60, economic: 55 },
+    detail: 'PLA conducted unannounced live-fire exercise 60nm from Taiwan median line this week. US freedom of navigation operations continuing. Taiwan defense budget at record high. TSMC supply chain contingency plans active.',
+    kalshi: 'CN-TW-EX-AUG25'
+  },
+  {
+    name: 'Sahel / Sudan', threat: 70, trend: 'stable', incidents: 18,
+    driver: 'RSF-SAF conflict in Sudan, jihadist expansion in Mali/Niger/Burkina',
+    subs: { military: 75, terrorism: 78, political: 65, economic: 60 },
+    detail: 'RSF forces cut last government resupply route into Khartoum. Jihadist groups controlling large Sahel territory post-French withdrawal. Wagner/Africa Corps presence expanding. Humanitarian crisis worsening.',
+    kalshi: 'SUDAN-PEACE-25'
+  },
+  {
+    name: 'Korean Peninsula', threat: 35, trend: 'stable', incidents: 6,
+    driver: 'DPRK ICBM program, North Korea-Russia military cooperation',
+    subs: { military: 48, terrorism: 15, political: 40, economic: 25 },
+    detail: 'DPRK suspended major provocations but continues ICBM development. North Korea-Russia arms deal deepening — DPRK artillery shells used in Ukraine. Kim Jong-un consolidating power. No imminent escalation expected.',
+    kalshi: 'DPRK-ICBM-25'
+  },
+  {
+    name: 'South China Sea', threat: 50, trend: 'up', incidents: 9,
+    driver: 'PRC-Philippines coast guard incidents at Second Thomas Shoal',
+    subs: { military: 58, terrorism: 10, political: 55, economic: 48 },
+    detail: 'Ongoing PRC-Philippines water cannon and ramming incidents at Second Thomas Shoal. US-Philippines mutual defense treaty invocations being tested. ASEAN unable to agree South China Sea code of conduct.',
+    kalshi: 'CN-PH-CLASH-25'
+  },
+  {
+    name: 'Latin America', threat: 42, trend: 'stable', incidents: 14,
+    driver: 'Venezuelan political crisis, Ecuador gang violence, cartel activity Mexico',
+    subs: { military: 30, terrorism: 55, political: 60, economic: 50 },
+    detail: 'Maduro consolidating control in Venezuela. Ecuador state of emergency extended — gang violence surge. Mexico cartel violence in Sinaloa following El Mencho death. Haiti gang control of Port-au-Prince ongoing.',
+    kalshi: 'MADURO-PRES-25'
+  },
 ];
+
+let expandedRegion = null;
+
 function buildMatrix() {
   const el = document.getElementById('region-matrix');
-  el.innerHTML = regions.map(r => `
-    <div class="region-cell ${r.level}">
-      <div class="name">${r.name}</div>
-      <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)">${r.threat}% THREAT</div>
-      <div class="threat-bar"><div class="threat-fill" style="width:${r.threat}%"></div></div>
-    </div>`).join('');
+  el.innerHTML = regions.map((r, idx) => {
+    const colors = {
+      critical: { bar: 'var(--red)',    bg: 'rgba(200,75,75,0.08)',   border: 'rgba(200,75,75,0.3)',   label: 'CRITICAL' },
+      high:     { bar: 'var(--yellow)', bg: 'rgba(200,168,75,0.07)',  border: 'rgba(200,168,75,0.25)', label: 'HIGH' },
+      mod:      { bar: 'var(--accent2)',bg: 'rgba(75,127,200,0.07)',  border: 'rgba(75,127,200,0.25)', label: 'MODERATE' },
+      low:      { bar: 'var(--green)',  bg: 'rgba(75,200,122,0.06)',  border: 'rgba(75,200,122,0.2)',  label: 'LOW' },
+    };
+    const lvl = r.threat >= 80 ? 'critical' : r.threat >= 65 ? 'high' : r.threat >= 45 ? 'mod' : 'low';
+    const c = colors[lvl];
+    const trendIcon = r.trend === 'up' ? '<span style="color:var(--red)">▲</span>' : r.trend === 'dn' ? '<span style="color:var(--green)">▼</span>' : '<span style="color:var(--text-dim)">→</span>';
+    const isExpanded = expandedRegion === idx;
+
+    const subBar = (label, val) => {
+      const subColor = val >= 80 ? 'var(--red)' : val >= 60 ? 'var(--yellow)' : val >= 40 ? 'var(--accent2)' : 'var(--green)';
+      return '<div style="margin-bottom:5px">' +
+        '<div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);margin-bottom:2px">' +
+          '<span>' + label + '</span><span style="color:' + subColor + '">' + val + '</span>' +
+        '</div>' +
+        '<div style="background:var(--border);height:3px;border-radius:2px;overflow:hidden">' +
+          '<div style="height:100%;width:' + val + '%;background:' + subColor + ';border-radius:2px"></div>' +
+        '</div>' +
+      '</div>';
+    };
+
+    const kalshiMkt = r.kalshi ? allMarkets.find(m => m.id === r.kalshi) : null;
+
+    return '<div style="background:' + c.bg + ';border:1px solid ' + c.border + ';border-left:3px solid ' + c.bar + ';border-radius:4px;cursor:pointer;transition:all 0.2s" onclick="toggleRegion(' + idx + ')">' +
+      // Header row
+      '<div style="padding:10px 12px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<div style="font-weight:700;font-size:0.85rem;color:var(--text-hi)">' + r.name + '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px">' +
+            trendIcon +
+            '<span style="font-family:var(--font-mono);font-size:0.65rem;font-weight:700;color:' + c.bar + '">' + r.threat + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<span style="font-family:var(--font-mono);font-size:0.58rem;padding:1px 5px;border-radius:2px;color:' + c.bar + ';border:1px solid ' + c.border + '">' + c.label + '</span>' +
+          '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim)">' + r.incidents + ' incidents/7d</span>' +
+        '</div>' +
+        '<div style="background:var(--border);height:4px;border-radius:2px;overflow:hidden">' +
+          '<div style="height:100%;width:' + r.threat + '%;background:' + c.bar + ';border-radius:2px"></div>' +
+        '</div>' +
+        '<div style="font-size:0.68rem;color:var(--text-dim);margin-top:6px;line-height:1.4">' + r.driver + '</div>' +
+      '</div>' +
+      // Expanded detail
+      (isExpanded ? '<div style="padding:0 12px 12px;border-top:1px solid ' + c.border + '">' +
+        '<div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);letter-spacing:0.1em;margin:10px 0 8px">SUB-INDICATORS</div>' +
+        subBar('Military Activity', r.subs.military) +
+        subBar('Terrorism / Non-State', r.subs.terrorism) +
+        subBar('Political Instability', r.subs.political) +
+        subBar('Economic Pressure', r.subs.economic) +
+        '<div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim);letter-spacing:0.1em;margin:10px 0 6px">ANALYST ASSESSMENT</div>' +
+        '<div style="font-size:0.73rem;color:var(--text-dim);line-height:1.5;margin-bottom:8px">' + r.detail + '</div>' +
+        (kalshiMkt ? '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:6px 10px;font-family:var(--font-mono);font-size:0.65rem">' +
+          '<span style="color:var(--text-dim)">LINKED MARKET: </span>' +
+          '<span style="color:var(--text-hi)">' + kalshiMkt.q.slice(0,60) + '…</span> ' +
+          '<span style="color:var(--green)">YES ' + kalshiMkt.yes + '¢</span>' +
+        '</div>' : '') +
+      '</div>' : '') +
+    '</div>';
+  }).join('');
   document.getElementById('matrix-ts').textContent = new Date().toLocaleDateString();
 }
+
+function toggleRegion(idx) {
+  expandedRegion = expandedRegion === idx ? null : idx;
+  buildMatrix();
+}
+
 buildMatrix();
 
 //  NEWS FEED 
@@ -2121,6 +2246,96 @@ setTimeout(async () => {
 }, 3000);
 
 console.log('%cGlassball loaded.', 'color: #c8a84b; font-family: monospace; font-size: 14px;');
+
+// ── KEYWORD WATCHLIST ──
+let watchwords = LSGet('watchwords', ['Hormuz', 'IRGC', 'ceasefire', 'nuclear', 'Houthi', 'strike']);
+
+function renderWatchlistTags() {
+  const el = document.getElementById('watchlist-tags');
+  if (!el) return;
+  el.innerHTML = watchwords.map((w, i) =>
+    '<span style="display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:0.7rem;' +
+    'background:var(--bg3);border:1px solid var(--accent2);color:var(--accent2);padding:2px 8px;border-radius:3px">' +
+    w +
+    '<button onclick="removeWatchword(' + i + ')" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:0.7rem;padding:0;line-height:1;margin-left:2px">x</button>' +
+    '</span>'
+  ).join('');
+  scanWatchlist();
+}
+
+function addWatchword() {
+  const inp = document.getElementById('watchlist-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!watchwords.includes(val)) {
+    watchwords.push(val);
+    LSSet('watchwords', watchwords);
+  }
+  inp.value = '';
+  renderWatchlistTags();
+}
+
+function removeWatchword(i) {
+  watchwords.splice(i, 1);
+  LSSet('watchwords', watchwords);
+  renderWatchlistTags();
+}
+
+function scanWatchlist() {
+  const hitsEl = document.getElementById('watchlist-hits');
+  if (!hitsEl || !watchwords.length) return;
+
+  // Get all current news items from the feed
+  const allNews = [...SAMPLE_NEWS];
+
+  const hits = [];
+  allNews.forEach(item => {
+    const text = (item.h + ' ' + (item.source || '')).toLowerCase();
+    const matched = watchwords.filter(w => text.includes(w.toLowerCase()));
+    if (matched.length > 0) {
+      hits.push({ item, matched });
+    }
+  });
+
+  if (!hits.length) {
+    hitsEl.innerHTML = '<div style="font-size:0.78rem;color:var(--text-dim);padding:8px">No current headlines match your watchwords.</div>';
+    return;
+  }
+
+  hitsEl.innerHTML = hits.map(({ item, matched }) => {
+    // Highlight matched keywords in headline
+    let headline = item.h;
+    matched.forEach(w => {
+      const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\]/g, '\$&') + ')', 'gi');
+      headline = headline.replace(re, '<mark style="background:rgba(200,168,75,0.3);color:var(--accent);border-radius:2px;padding:0 2px">$1</mark>');
+    });
+
+    const matchBadges = matched.map(w =>
+      '<span style="font-family:var(--font-mono);font-size:0.58rem;padding:1px 5px;border-radius:2px;' +
+      'background:rgba(200,168,75,0.15);color:var(--accent);border:1px solid rgba(200,168,75,0.3)">' + w + '</span>'
+    ).join('');
+
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<div style="font-size:0.82rem;color:var(--text-hi);line-height:1.35;margin-bottom:4px">' + headline + '</div>' +
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+        '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--accent2)">' + item.source + '</span>' +
+        '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim)">' + item.time + '</span>' +
+        matchBadges +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Re-scan when news loads
+const _origLoadNews = loadNews;
+loadNews = function() {
+  _origLoadNews.apply(this, arguments);
+  setTimeout(scanWatchlist, 600);
+};
+
+// Init
+renderWatchlistTags();
+
 </script>
 
 <style>
