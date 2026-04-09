@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prediction Buddy — Personal Intelligence Dashboard</title>
+<title>Glassball — Personal Intelligence Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   /*  CALIBRI STACK + FALLBACKS  */
   :root {
-    --font-body: 'Calibri', 'Calibri Regular', 'Gill Sans', 'Gill Sans MT', 'Trebuchet MS', sans-serif;
-    --font-mono: 'Source Code Pro', 'Courier New', monospace;
-    --font-serif: 'Libre Baskerville', Georgia, serif;
+    --font-body: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --font-serif: 'IBM Plex Serif', Georgia, serif;
 
     --bg:        #0d0f12;
     --bg2:       #13161b;
@@ -526,7 +526,7 @@
 <!--  HEADER  -->
 <div id="header">
   <div class="logo">
-    Prediction Buddy
+    Glassball
     <span>Personal Intelligence &amp; Prediction Dashboard</span>
   </div>
   <div id="clock">
@@ -549,9 +549,8 @@
   <div class="tab" data-tab="livecams">Live Feeds</div>
   <div class="tab" data-tab="kalshi">Kalshi Markets</div>
   <div class="tab" data-tab="words">Political Language</div>
-  <div class="tab" data-tab="predictions">My Predictions</div>
   <div class="tab" data-tab="econ">Economic Signals</div>
-  <div class="tab" data-tab="cone">Scenario Planner</div>
+  <div class="tab" data-tab="travel">Travel Advisories</div>
   <div class="tab" data-tab="settings">Settings</div>
 </div>
 
@@ -853,47 +852,1142 @@
     </div>
   </div>
 
-  <!--  TAB: MY PREDICTIONS  -->
-  <div class="panel" id="panel-predictions">
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="openPredModal()">+ New Prediction</button>
-      <button class="btn btn-ghost" onclick="exportPreds()"> Export JSON</button>
-      <button class="btn btn-ghost" onclick="importPreds()"> Import JSON</button>
-    </div>
+  <!--  TAB: ECONOMIC SIGNALS  -->
+  <div class="panel" id="panel-econ">
 
-    <!-- Stats row -->
-    <div class="grid-4" id="pred-stats" style="margin-bottom:16px">
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent)" id="stat-total">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Total Predictions</div>
+    <!-- LIVE PRICE CHART CARDS -->
+    <div class="section-title">Live Market Prices <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-left:8px">via Stooq — updates on load</span></div>
+    <div id="price-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px"></div>
+
+    <!-- MAIN OIL CHART -->
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">WTI Crude Oil — 30 Day <span class="badge" id="oil-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-oil"></canvas></div>
       </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--green)" id="stat-wins">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Correct</div>
-      </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--red)" id="stat-losses">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Wrong</div>
-      </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent2)" id="stat-acc">–</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Accuracy</div>
+      <div class="card" style="padding:12px">
+        <div class="card-header">Gold — 30 Day <span class="badge" id="gold-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-gold"></canvas></div>
       </div>
     </div>
 
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">S&amp;P 500 — 30 Day <span class="badge" id="spx-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-spx"></canvas></div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-header">VIX Fear Index — 30 Day <span class="badge" id="vix-last">—</span></div>
+        <div style="position:relative;height:140px"><canvas id="chart-vix"></canvas></div>
+      </div>
+    </div>
+
+    <!-- CONFLICT ECONOMY GAUGES -->
+    <div class="section-title">Conflict Economy Indicators</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:20px" id="conflict-gauges">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- GLOBAL TRANSIT HUB TRACKER -->
+    <div class="section-title">Global Transit Hub Monitor</div>
+    <div class="api-note" style="margin-bottom:14px">
+      Cost premiums are vs pre-2023 baseline. Status reflects current geopolitical risk assessment. Throughput figures are analyst estimates updated weekly.
+    </div>
+
+    <div id="hub-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:20px">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- DEFENSE VS MARKET SPREAD -->
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card" style="padding:12px">
+        <div class="card-header">Defense (ITA) vs S&amp;P 500 — Spread</div>
+        <div style="position:relative;height:140px"><canvas id="chart-defense"></canvas></div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:6px">Positive = defense outperforming — conflict escalation signal</div>
+      </div>
+      <div class="card" style="padding:12px">
+        <div class="card-header">Gold / Oil Ratio — Risk Gauge</div>
+        <div style="position:relative;height:140px"><canvas id="chart-ratio"></canvas></div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-top:6px">Rising = risk-off / geopolitical fear dominant</div>
+      </div>
+    </div>
+
+    <!-- SANCTIONS WATCHLIST -->
+    <div class="section-title">Sanctions & Restrictions Watchlist</div>
     <div class="card">
-      <div class="card-header">
-        Prediction Log
-        <select id="pred-filter" onchange="renderPreds()" style="width:130px;font-size:0.72rem;padding:3px 6px">
-          <option value="all">All</option>
-          <option value="open">Open</option>
-          <option value="win">Correct</option>
-          <option value="loss">Wrong</option>
+      <div class="card-header">Recently Sanctioned Entities <span class="badge">MANUALLY UPDATED</span>
+        <button class="btn btn-primary" style="padding:4px 10px;font-size:0.68rem" onclick="addSanction()">+ Add Entry</button>
+      </div>
+      <div id="sanctions-list"></div>
+    </div>
+
+  </div>
+
+  <!--  TAB: ECONOMIC SIGNALS  -->
+  <div class="panel" id="panel-econ">
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-header">Commodities</div>
+        <div class="metric-row"><span class="metric-label">Crude Oil (WTI)</span><div><span class="metric-val">$81.40</span> <span class="metric-chg chg-neg">0.8%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Brent Crude</span><div><span class="metric-val">$85.20</span> <span class="metric-chg chg-neg">0.6%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Natural Gas (Henry Hub)</span><div><span class="metric-val">$1.92</span> <span class="metric-chg chg-pos">2.1%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Gold</span><div><span class="metric-val">$2,341</span> <span class="metric-chg chg-pos">0.3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Wheat (CBOT)</span><div><span class="metric-val">$543</span> <span class="metric-chg chg-pos">1.2%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Uranium</span><div><span class="metric-val">$90.50</span> <span class="metric-chg chg-neg">0.4%</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Equity / Risk Indicators</div>
+        <div class="metric-row"><span class="metric-label">S&amp;P 500</span><div><span class="metric-val">5,211</span> <span class="metric-chg chg-pos">0.6%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Nasdaq 100</span><div><span class="metric-val">18,190</span> <span class="metric-chg chg-pos">0.9%</span></div></div>
+        <div class="metric-row"><span class="metric-label">VIX (Fear Index)</span><div><span class="metric-val">17.3</span> <span class="metric-chg chg-pos">5.0%</span></div></div>
+        <div class="metric-row"><span class="metric-label">MSCI EM</span><div><span class="metric-val">1,048</span> <span class="metric-chg chg-neg">0.3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Defense ETF (ITA)</span><div><span class="metric-val">$158.40</span> <span class="metric-chg chg-pos">1.1%</span></div></div>
+        <div class="metric-row"><span class="metric-label">10Y Treasury Yield</span><div><span class="metric-val">4.52%</span> <span class="metric-chg chg-neg">0.04</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Sanctions / Conflict Economy</div>
+        <div class="metric-row"><span class="metric-label">USD/IRR (market rate)</span><div><span class="metric-val">580,000</span> <span class="metric-chg chg-neg">1.2%</span></div></div>
+        <div class="metric-row"><span class="metric-label">USD/RUB</span><div><span class="metric-val">91.4</span> <span class="metric-chg chg-neg">0.5%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Iran Oil Export (mbpd est.)</span><div><span class="metric-val">1.55</span> <span class="metric-chg chg-neg">3%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Strait of Hormuz throughput</span><div><span class="metric-val">~17 mbpd</span> <span class="metric-chg" style="color:var(--yellow)">WATCH</span></div></div>
+        <div class="metric-row"><span class="metric-label">Baltic Dry Index</span><div><span class="metric-val">1,840</span> <span class="metric-chg chg-neg">0.7%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Red Sea Rerouting Cost</span><div><span class="metric-val">+$1.2M/vessel</span> <span class="metric-chg" style="color:var(--yellow)">HIGH</span></div></div>
+      </div>
+
+    </div>
+
+    <div class="section-title">Key Economic Events</div>
+    <div class="card">
+      <div class="card-header">Upcoming Macro Events <span class="badge">MANUALLY UPDATED</span></div>
+      <div id="econ-events">
+        <div class="metric-row"><span class="metric-label">US CPI (Apr)</span><span class="metric-val" style="font-size:0.78rem">May 15 · 8:30 ET</span></div>
+        <div class="metric-row"><span class="metric-label">FOMC Meeting</span><span class="metric-val" style="font-size:0.78rem">May 6–7</span></div>
+        <div class="metric-row"><span class="metric-label">US Jobs Report (Apr)</span><span class="metric-val" style="font-size:0.78rem">May 3 · 8:30 ET</span></div>
+        <div class="metric-row"><span class="metric-label">EU Inflation (flash)</span><span class="metric-val" style="font-size:0.78rem">Apr 30</span></div>
+        <div class="metric-row"><span class="metric-label">OPEC+ Meeting</span><span class="metric-val" style="font-size:0.78rem">Jun 1</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Conflict-Linked Economic Watchlist</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Strait of Hormuz Risk Monitor</div>
+        <div class="metric-row"><span class="metric-label">Daily Throughput</span><span class="metric-val">~17 mbpd</span></div>
+        <div class="metric-row"><span class="metric-label">US Naval Assets (5th Fleet)</span><span class="metric-val" style="color:var(--yellow)">ELEVATED</span></div>
+        <div class="metric-row"><span class="metric-label">Tanker Insurance Premium</span><span class="metric-val">+340% vs 2023</span></div>
+        <div class="metric-row"><span class="metric-label">Closure Risk (Kalshi est.)</span><span class="metric-val" style="color:var(--red)">~12%</span></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Defense Spending Indicators</div>
+        <div class="metric-row"><span class="metric-label">US FY25 Defense Budget</span><span class="metric-val">$886B</span></div>
+        <div class="metric-row"><span class="metric-label">Raytheon (RTX)</span><div><span class="metric-val">$117.40</span> <span class="metric-chg chg-pos">0.8%</span></div></div>
+        <div class="metric-row"><span class="metric-label">Lockheed Martin (LMT)</span><div><span class="metric-val">$496.80</span> <span class="metric-chg chg-pos">0.5%</span></div></div>
+        <div class="metric-row"><span class="metric-label">NATO member avg. GDP%</span><span class="metric-val">2.1% → 2.4%</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- TAB: TRAVEL ADVISORIES -->
+  <div class="panel" id="panel-travel">
+
+    <div class="api-note" style="margin-bottom:16px">
+      <strong>US State Department Travel Advisories — April 2026:</strong> Based on official State Dept designations. Level 4 list expanded significantly following onset of US-Iran hostilities (Feb 28, 2026). A worldwide caution alert is currently active. Source: <a href="https://travel.state.gov" target="_blank" style="color:var(--accent2)">travel.state.gov</a>
+    </div>
+
+    <!-- Summary stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--green)" id="count-l1">57</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 1</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Normal Precautions</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--yellow);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--yellow)" id="count-l2">89</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 2</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Increased Caution</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid #e07020;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:#e07020" id="count-l3">26</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 3</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Reconsider Travel</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--red)" id="count-l4">22</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 4</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Do Not Travel</div>
+      </div>
+    </div>
+
+    <!-- Worldwide caution banner -->
+    <div style="background:rgba(200,75,75,0.1);border:1px solid rgba(200,75,75,0.4);border-radius:4px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;font-weight:700;color:var(--red);white-space:nowrap">WORLDWIDE CAUTION ACTIVE</div>
+      <div style="font-size:0.78rem;color:var(--text-dim)">Issued Mar 22, 2026 — Americans worldwide, especially in the Middle East, advised to exercise increased caution due to US-Iran hostilities and elevated threat to US interests globally.</div>
+    </div>
+
+    <!-- Filter + Search -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <input type="text" id="travel-search" placeholder="Search country..." style="flex:1;min-width:180px;max-width:280px" oninput="filterTravel()">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="travel-filter-btn active" data-lv="all" onclick="filterTravel('all')">All</button>
+        <button class="travel-filter-btn" data-lv="1" onclick="filterTravel('1')">L1 Normal</button>
+        <button class="travel-filter-btn" data-lv="2" onclick="filterTravel('2')">L2 Caution</button>
+        <button class="travel-filter-btn" data-lv="3" onclick="filterTravel('3')">L3 Reconsider</button>
+        <button class="travel-filter-btn" data-lv="4" onclick="filterTravel('4')">L4 Do Not Travel</button>
+      </div>
+      <select id="travel-region" onchange="filterTravel()" style="width:150px">
+        <option value="all">All Regions</option>
+        <option value="Middle East">Middle East</option>
+        <option value="Europe">Europe</option>
+        <option value="Africa">Africa</option>
+        <option value="Asia">Asia</option>
+        <option value="Americas">Americas</option>
+        <option value="Oceania">Oceania</option>
+      </select>
+      <select id="travel-sort" onchange="filterTravel()" style="width:140px">
+        <option value="level-desc">Level (High→Low)</option>
+        <option value="level-asc">Level (Low→High)</option>
+        <option value="alpha">Alphabetical</option>
+        <option value="region">By Region</option>
+      </select>
+    </div>
+
+    <!-- Results count -->
+    <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:10px" id="travel-count"></div>
+
+    <!-- Advisory grid -->
+    <div id="travel-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:20px"></div>
+
+    <!-- Recent changes -->
+    <div class="section-title">Recent Advisory Changes</div>
+    <div class="card">
+      <div class="card-header">Upgrades / Downgrades — 2026 <span class="badge">ANALYST TRACKED</span></div>
+      <div id="travel-changes"></div>
+    </div>
+
+  </div>
+
+  <!--  TAB: SETTINGS  -->
+  <div class="panel" id="panel-settings">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">API Configuration</div>
+        <div class="form-row">
+          <label>Kalshi API Key</label>
+          <input type="password" id="kalshi-key" placeholder="Enter your Kalshi API key…">
+        </div>
+        <div class="form-row">
+          <label>GNews API Key (for live news)</label>
+          <input type="password" id="gnews-key" placeholder="gnews.io API key…">
+        </div>
+        <div class="form-row">
+          <label>News Refresh Interval</label>
+          <select id="refresh-interval">
+            <option value="300000">5 minutes</option>
+            <option value="600000" selected>10 minutes</option>
+            <option value="1800000">30 minutes</option>
+            <option value="0">Manual only</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        <div id="settings-msg" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--green);margin-top:8px;display:none"> Saved to localStorage</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Tracked Topics</div>
+        <div class="form-row">
+          <label>Keywords for news filtering (comma-separated)</label>
+          <textarea id="tracked-topics" style="height:80px" placeholder="Iran, Hormuz, Ukraine, Taiwan, OPEC, tariffs, Fed…"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Analyst Name (for report headers)</label>
+          <input type="text" id="analyst-name" placeholder="e.g. J. Smith">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Data Management</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-ghost" onclick="exportAll()"> Export All Data (JSON)</button>
+          <button class="btn btn-ghost" onclick="importAll()"> Import Data (JSON)</button>
+          <button class="btn btn-danger" onclick="clearAll()"> Clear All Local Data</button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:12px;line-height:1.6">
+          All prediction and note data is stored in your browser's localStorage. 
+          Export regularly to avoid loss. For GitHub Pages deployment, no backend is required.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">About &amp; GitHub Deployment</div>
+        <div style="font-size:0.82rem;line-height:1.7;color:var(--text-dim)">
+          <p style="margin-bottom:8px">Deploy to GitHub Pages: push <code style="color:var(--accent);font-family:var(--font-mono)">index.html</code> to a repo's <code style="font-family:var(--font-mono);color:var(--accent)">gh-pages</code> branch or enable Pages from the <code style="font-family:var(--font-mono);color:var(--accent)">main</code> branch root.</p>
+          <p style="margin-bottom:8px">All data persists in browser localStorage — no server needed.</p>
+          <p>For real-time Kalshi data, configure your API key above. Kalshi's public markets endpoint requires authentication for full access.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+l>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glassball — Personal Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  /*  CALIBRI STACK + FALLBACKS  */
+  :root {
+    --font-body: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --font-serif: 'IBM Plex Serif', Georgia, serif;
+
+    --bg:        #0d0f12;
+    --bg2:       #13161b;
+    --bg3:       #1b1f28;
+    --border:    #2a2f3d;
+    --accent:    #c8a84b;
+    --accent2:   #4b7fc8;
+    --accent3:   #c84b4b;
+    --text:      #d4d8e2;
+    --text-dim:  #7a8099;
+    --text-hi:   #f0f2f8;
+    --green:     #4bc87a;
+    --red:       #c84b4b;
+    --yellow:    #c8a84b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    height: 100%;
+  }
+
+  /*  HEADER  */
+  #header {
+    background: var(--bg2);
+    border-bottom: 2px solid var(--accent);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #header .logo {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #header .logo span { color: var(--text-dim); font-size: 0.75rem; display: block; letter-spacing: 0.12em; margin-top: 1px; }
+  #clock { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim); text-align: right; }
+  #clock .utc { color: var(--accent); font-weight: 600; }
+  #status-bar {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 4px 24px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /*  TABS  */
+  #tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 11px 20px;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .tab-icon { margin-right: 6px; }
+
+  /*  MAIN LAYOUT  */
+  #content { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /*  GRID HELPERS  */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+  .col-span-3 { grid-column: span 3; }
+
+  /*  CARDS  */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .card-header {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header .badge {
+    font-size: 0.62rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+
+  /*  NEWS ITEMS  */
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-item:hover { background: var(--bg3); margin: 0 -16px; padding: 10px 16px; }
+  .news-item .headline {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-hi);
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .news-item .meta {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+  }
+  .news-item .meta .source { color: var(--accent2); }
+  .news-item .meta .region { color: var(--accent); }
+  .news-item .severity {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .sev-high { background: rgba(200,75,75,0.18); color: var(--red); border: 1px solid rgba(200,75,75,0.3); }
+  .sev-med  { background: rgba(200,168,75,0.15); color: var(--yellow); border: 1px solid rgba(200,168,75,0.3); }
+  .sev-low  { background: rgba(75,200,122,0.12); color: var(--green); border: 1px solid rgba(75,200,122,0.25); }
+
+  /*  REGION INDICATORS  */
+  .region-map {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .region-cell {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+  .region-cell .name { font-weight: 600; color: var(--text-hi); margin-bottom: 3px; }
+  .region-cell .threat-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .region-cell .threat-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .threat-critical .threat-fill { background: var(--red); }
+  .threat-high .threat-fill { background: var(--yellow); }
+  .threat-mod .threat-fill { background: var(--accent2); }
+  .threat-low .threat-fill { background: var(--green); }
+
+  /*  KALSHI MARKETS  */
+  .market-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .market-item:last-child { border-bottom: none; }
+  .market-item .q { font-size: 0.85rem; color: var(--text-hi); margin-bottom: 6px; line-height: 1.35; }
+  .market-bars { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+  .market-bar-wrap { flex: 1; }
+  .market-bar-label { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .market-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .market-bar-fill { height: 100%; border-radius: 3px; transition: width 1.2s ease; }
+  .bar-yes { background: var(--green); }
+  .bar-no  { background: var(--red); }
+  .market-meta { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; display: flex; gap: 12px; }
+  .market-meta .vol { color: var(--accent2); }
+  .market-meta .cat { color: var(--accent); }
+  .my-bet {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 1px 7px;
+    border-radius: 2px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .bet-yes { color: var(--green); border-color: var(--green); background: rgba(75,200,122,0.08); }
+  .bet-no  { color: var(--red);   border-color: var(--red);   background: rgba(200,75,75,0.08); }
+  .bet-none { color: var(--text-dim); border-color: var(--border); }
+  .bet-none:hover { border-color: var(--accent); color: var(--accent); }
+
+  /*  WORD TRACKER  */
+  .word-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .word-tag {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.15s;
+  }
+  .word-tag:hover { border-color: var(--accent2); }
+  .word-tag .count {
+    background: var(--accent2);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 2px;
+    min-width: 22px;
+    text-align: center;
+  }
+  .word-tag .trend { font-size: 0.7rem; }
+  .trend-up { color: var(--red); }
+  .trend-dn { color: var(--green); }
+
+  .politician-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .politician-row:last-child { border-bottom: none; }
+  .pol-name { font-weight: 600; font-size: 0.85rem; color: var(--text-hi); min-width: 140px; }
+  .pol-party { font-family: var(--font-mono); font-size: 0.65rem; padding: 1px 5px; border-radius: 2px; }
+  .party-r { background: rgba(200,75,75,0.15); color: var(--red); border: 1px solid rgba(200,75,75,0.3); }
+  .party-d { background: rgba(75,127,200,0.15); color: var(--accent2); border: 1px solid rgba(75,127,200,0.3); }
+  .pol-words { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+  .pol-word { font-family: var(--font-mono); font-size: 0.68rem; background: var(--bg3); border: 1px solid var(--border); padding: 2px 6px; border-radius: 2px; color: var(--text-dim); }
+
+  /*  MY PREDICTIONS LOG  */
+  .pred-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pred-item:last-child { border-bottom: none; }
+  .pred-q { font-size: 0.85rem; color: var(--text-hi); }
+  .pred-conf {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+  .pred-outcome {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .outcome-win  { background: rgba(75,200,122,0.15); color: var(--green); }
+  .outcome-loss { background: rgba(200,75,75,0.15); color: var(--red); }
+  .outcome-open { background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
+
+  /*  FORM ELEMENTS  */
+  input, select, textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    padding: 7px 10px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent2); }
+  select option { background: var(--bg2); }
+
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    border: 1px solid;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0d0f12; }
+  .btn-primary:hover { background: #d4b55a; }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-dim); }
+  .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+  .btn-danger { background: transparent; border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: rgba(200,75,75,0.1); }
+
+  /*  INTEL FEED (SCROLLABLE)  */
+  .feed-container { max-height: 420px; overflow-y: auto; }
+  .feed-container::-webkit-scrollbar { width: 4px; }
+  .feed-container::-webkit-scrollbar-track { background: var(--bg); }
+  .feed-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /*  TICKER  */
+  #ticker-wrap {
+    overflow: hidden;
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 0;
+    margin-bottom: 16px;
+  }
+  #ticker {
+    display: inline-flex;
+    gap: 48px;
+    white-space: nowrap;
+    animation: scroll-ticker 60s linear infinite;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    padding-left: 100%;
+  }
+  #ticker .tick-item { display: flex; align-items: center; gap: 8px; }
+  #ticker .tick-label { color: var(--accent); font-weight: 600; }
+  #ticker .tick-val.up { color: var(--green); }
+  #ticker .tick-val.dn { color: var(--red); }
+  @keyframes scroll-ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+  /*  ECONOMIC METRICS  */
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.83rem;
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { color: var(--text-dim); }
+  .metric-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-hi); }
+  .metric-chg { font-family: var(--font-mono); font-size: 0.72rem; }
+  .chg-pos { color: var(--green); }
+  .chg-neg { color: var(--red); }
+
+  /*  MODAL  */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    width: 480px;
+    max-width: 95vw;
+  }
+  .modal h3 {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .form-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .form-row label { font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+  /*  NOTES  */
+  textarea.notes { min-height: 120px; resize: vertical; }
+
+  /*  MISC  */
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-dim);
+    font-size: 0.83rem;
+  }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .api-note {
+    background: rgba(75,127,200,0.08);
+    border: 1px solid rgba(75,127,200,0.2);
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .api-note a { color: var(--accent2); }
+  .api-note strong { color: var(--text); }
+
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .search-bar input { flex: 1; }
+
+  /*  CONFIDENCE METER  */
+  .conf-ring {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.75rem;
+    border: 3px solid;
+    flex-shrink: 0;
+  }
+  .conf-high { border-color: var(--green); color: var(--green); }
+  .conf-med  { border-color: var(--yellow); color: var(--yellow); }
+  .conf-low  { border-color: var(--red); color: var(--red); }
+
+  @media (max-width: 900px) {
+    .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .col-span-2, .col-span-3 { grid-column: span 1; }
+  }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    #header { flex-direction: column; gap: 6px; }
+    #tabs { padding: 0 8px; }
+    #content { padding: 14px 10px; }
+  }
+
+
+.pol-cat-btn {
+  font-family: var(--font-body); font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 5px 12px; border: 1px solid var(--border);
+  border-radius: 3px; background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all 0.15s;
+}
+.pol-cat-btn:hover { border-color: var(--text-dim); color: var(--text); }
+.pol-cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,75,0.08); }
+/* injected via Python */
+</style>
+</head>
+<body>
+
+<!--  HEADER  -->
+<div id="header">
+  <div class="logo">
+    Glassball
+    <span>Personal Intelligence &amp; Prediction Dashboard</span>
+  </div>
+  <div id="clock">
+    <div id="local-time">—</div>
+    <div class="utc" id="utc-time">—</div>
+  </div>
+</div>
+
+<!--  STATUS BAR  -->
+<div id="status-bar">
+  <span><span class="status-dot"></span>LIVE</span>
+  <span id="sb-date">—</span>
+  <span>FEEDS: GDELT · KALSHI · GNews</span>
+  <span id="sb-pred-count">—</span>
+</div>
+
+<!--  TABS  -->
+<div id="tabs">
+  <div class="tab active" data-tab="news">Global News Feed</div>
+  <div class="tab" data-tab="livecams">Live Feeds</div>
+  <div class="tab" data-tab="kalshi">Kalshi Markets</div>
+  <div class="tab" data-tab="words">Political Language</div>
+  <div class="tab" data-tab="econ">Economic Signals</div>
+  <div class="tab" data-tab="travel">Travel Advisories</div>
+  <div class="tab" data-tab="settings">Settings</div>
+</div>
+
+<!--  CONTENT  -->
+<div id="content">
+
+  <!--  TAB: NEWS  -->
+  <div class="panel active" id="panel-news">
+
+    <!-- Ticker -->
+    <div id="ticker-wrap">
+      <div id="ticker">
+        <span class="tick-item"><span class="tick-label">CRUDE OIL</span><span class="tick-val dn">$81.40 0.8%</span></span>
+        <span class="tick-item"><span class="tick-label">GOLD</span><span class="tick-val up">$2,341 0.3%</span></span>
+        <span class="tick-item"><span class="tick-label">USD/IRR (MARKET)</span><span class="tick-val dn">580,000 1.2%</span></span>
+        <span class="tick-item"><span class="tick-label">S&amp;P 500</span><span class="tick-val up">5,211 0.6%</span></span>
+        <span class="tick-item"><span class="tick-label">10Y TREASURY</span><span class="tick-val dn">4.52% 0.04</span></span>
+        <span class="tick-item"><span class="tick-label">VIX</span><span class="tick-val up">17.3 5%</span></span>
+        <span class="tick-item"><span class="tick-label">HRF SHIPPING INDEX</span><span class="tick-val dn">2,140 2.1%</span></span>
+        <span class="tick-item"><span class="tick-label">BITCOIN</span><span class="tick-val up">$67,200 1.4%</span></span>
+        <span class="tick-item"><span class="tick-label">EUR/USD</span><span class="tick-val">1.0832</span></span>
+        <span class="tick-item"><span class="tick-label">SHEKEL/USD</span><span class="tick-val dn">3.71 0.5%</span></span>
+      </div>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- Region Status -->
+      <div class="card">
+        <div class="card-header">Regional Threat Matrix <span class="badge" id="matrix-ts">–</span></div>
+        <div class="region-map" id="region-matrix">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Live Feed -->
+      <div class="card col-span-2">
+        <div class="card-header">
+          Global News Feed
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="news-filter" style="width:130px;font-size:0.72rem;padding:3px 6px">
+              <option value="all">All Regions</option>
+              <option value="ME">Middle East</option>
+              <option value="EU">Europe/Ukraine</option>
+              <option value="AS">Asia-Pacific</option>
+              <option value="AF">Africa</option>
+              <option value="LA">Latin America</option>
+              <option value="US">United States</option>
+            </select>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:0.68rem" onclick="loadNews()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="feed-container" id="news-feed">
+          <div class="empty-state"><div class="icon">⏳</div>Loading intelligence feed…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Key Developments -->
+    <div class="section-title">Flagged Developments</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Analyst Notes <span class="badge">PERSONAL</span></div>
+        <div id="flagged-notes" class="feed-container" style="max-height:240px">
+          <div class="empty-state">Right-click any news item to flag it</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Active Conflicts Summary</div>
+        <div id="conflict-summary">
+          <div class="metric-row"><span class="metric-label">Iran–Israel (Op. Epic Fury)</span><span class="metric-val" style="color:var(--red)">CRITICAL</span></div>
+          <div class="metric-row"><span class="metric-label">Russia–Ukraine</span><span class="metric-val" style="color:var(--red)">CRITICAL</span></div>
+          <div class="metric-row"><span class="metric-label">Gaza / Hamas</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Houthi Maritime</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Sudan</span><span class="metric-val" style="color:var(--yellow)">HIGH</span></div>
+          <div class="metric-row"><span class="metric-label">Taiwan Strait</span><span class="metric-val" style="color:var(--accent2)">ELEVATED</span></div>
+          <div class="metric-row"><span class="metric-label">Kosovo / Serbia</span><span class="metric-val" style="color:var(--accent2)">ELEVATED</span></div>
+          <div class="metric-row"><span class="metric-label">Myanmar</span><span class="metric-val" style="color:var(--accent2)">MODERATE</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- TAB: LIVE FEEDS -->
+  <div class="panel" id="panel-livecams">
+
+    <div class="api-note" style="margin-bottom:16px">
+      <strong>Note:</strong> Browser security (X-Frame-Options) prevents live video from being embedded from most news sites. The map and tracking tools below embed directly. All news/government streams open in a new tab — use them alongside this dashboard.
+    </div>
+
+    <!-- LIVE MAP TOOLS — these actually embed -->
+    <div class="section-title">Live Situational Maps</div>
+    <div class="grid-3" style="margin-bottom:20px">
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">MarineTraffic — Strait of Hormuz</div>
+        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:7/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">ADS-B Exchange — Middle East</div>
+        <iframe src="https://globe.adsbexchange.com/?lat=26&lon=55&zoom=6"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Wind / Weather</div>
+        <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=wind&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Stuff in Space — Live Orbital Map</div>
+        <iframe src="https://ajmas.github.io/StuffInSpace/"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+    </div>
+
+    <div class="section-title">Satellite Tracking</div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
+      <div class="card-header" style="padding:10px 14px">N2YO Real-Time Satellite Tracker — click any satellite to track</div>
+      <div style="padding:12px;background:var(--bg3)">
+        <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">
+          N2YO tracks 24,000+ catalogued objects. Links open full tracker in new tab:
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+          <a href="https://www.n2yo.com/?s=25544" target="_blank" class="sat-link">ISS (ZARYA) — 25544</a>
+          <a href="https://www.n2yo.com/?s=48274" target="_blank" class="sat-link">Starlink Constellation</a>
+          <a href="https://www.n2yo.com/?s=20580" target="_blank" class="sat-link">Hubble Space Telescope</a>
+          <a href="https://www.n2yo.com/?s=54216" target="_blank" class="sat-link">Tiangong (China Station)</a>
+          <a href="https://www.n2yo.com/satellite/?s=28888" target="_blank" class="sat-link">USA-224 (KH-11 Spy Sat)</a>
+          <a href="https://www.n2yo.com/satellite/?s=43941" target="_blank" class="sat-link">USA-290 (NROL Recon)</a>
+          <a href="https://www.n2yo.com/satellite/?s=39084" target="_blank" class="sat-link">COSMOS 2486 (Russian)</a>
+          <a href="https://www.n2yo.com/satellite/?s=49260" target="_blank" class="sat-link">COSMOS 2553 (Russian)</a>
+          <a href="https://www.n2yo.com/?s=27386" target="_blank" class="sat-link">USA-184 (GPS IIR-M)</a>
+          <a href="https://www.n2yo.com/satellite/?s=44387" target="_blank" class="sat-link">OFEK-16 (Israel Recon)</a>
+          <a href="https://www.n2yo.com/" target="_blank" class="sat-link" style="border-color:var(--accent);color:var(--accent)">N2YO Full Tracker →</a>
+          <a href="https://celestrak.org/cesium/orbit-viz.php" target="_blank" class="sat-link">Celestrak 3D Orbits</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- STREAM LAUNCHERS -->
+    <div class="section-title">News Streams — Click to Open</div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="cam-filter-btn active" data-lcat="all" onclick="filterLinks('all')">All</button>
+      <button class="cam-filter-btn" data-lcat="news" onclick="filterLinks('news')">News</button>
+      <button class="cam-filter-btn" data-lcat="gov" onclick="filterLinks('gov')">Government</button>
+      <button class="cam-filter-btn" data-lcat="geo" onclick="filterLinks('geo')">Geo / Intel</button>
+    </div>
+
+    <div id="stream-link-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:20px"></div>
+
+    <!-- Custom feed slot -->
+    <div class="section-title">Add Custom Link</div>
+    <div class="card">
+      <div class="card-header">Custom Stream Link</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <input type="text" id="custom-cam-url" placeholder="https://..." style="flex:2;min-width:200px">
+        <input type="text" id="custom-cam-label" placeholder="Label" style="flex:1;min-width:140px">
+        <select id="custom-cam-cat" style="width:130px">
+          <option value="news">News</option>
+          <option value="gov">Government</option>
+          <option value="geo">Geo / Intel</option>
         </select>
+        <button class="btn btn-primary" onclick="addCustomCam()">Add</button>
       </div>
-      <div id="pred-list">
-        <div class="empty-state">No predictions logged yet. Add your first one!</div>
+    </div>
+
+  </div>
+
+  <!--  TAB: KALSHI  -->
+  <div class="panel" id="panel-kalshi">
+    <div class="api-note">
+      <strong>Kalshi API:</strong> Markets below are fetched live from Kalshi's public REST API. 
+      Add your API key in <strong>Settings</strong> to unlock real-time prices and place bets directly. 
+      <a href="https://kalshi.com/developer" target="_blank">Get API key →</a>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="kalshi-search" placeholder="Search markets… (e.g. Iran, Ukraine, tariff, election)" oninput="filterMarkets()">
+      <select id="kalshi-cat" onchange="filterMarkets()" style="width:170px">
+        <option value="all">All Categories</option>
+        <option value="conflict">Conflict / War</option>
+        <option value="geo">Geopolitical</option>
+        <option value="econ">Economic</option>
+        <option value="monetary">Monetary Policy</option>
+        <option value="politics">US Politics</option>
+        <option value="elections">Elections</option>
+        <option value="tech">Technology / AI</option>
+        <option value="energy">Energy</option>
+      </select>
+      <button class="btn btn-primary" onclick="loadKalshi()">↻ Refresh</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="card col-span-2" id="kalshi-featured">
+        <div class="card-header">Featured Geopolitical &amp; Economic Markets <span class="badge" id="kalshi-count">–</span></div>
+        <div class="feed-container" id="kalshi-feed" style="max-height:600px">
+          <div class="empty-state"><div class="icon">⏳</div>Loading markets…</div>
+        </div>
       </div>
+    </div>
+
+    <div class="section-title">My Kalshi Position Log</div>
+    <div class="card">
+      <div class="card-header">Tracked Positions <span class="badge">PERSONAL</span>
+        <button class="btn btn-primary" style="padding:4px 12px;font-size:0.68rem" onclick="openBetModal()">+ Log Position</button>
+      </div>
+      <div id="bet-log">
+        <div class="empty-state">No positions logged yet. Click a market's YES/NO button or use "+ Log Position".</div>
+      </div>
+    </div>
+  </div>
+
+  <!--  TAB: POLITICAL LANGUAGE  -->
+  <div class="panel" id="panel-words">
+
+    <!-- TOP ROW: Search tools -->
+    <div class="grid-2" style="margin-bottom:16px">
+
+      <!-- POLITICIAN SEARCH -->
+      <div class="card">
+        <div class="card-header">Politician Search</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="pol-search-input" placeholder="Search by name e.g. Tom Cotton, Rubio, Hegseth..." style="flex:1" oninput="searchPolitician(this.value)">
+          <button class="btn btn-ghost" onclick="document.getElementById('pol-search-input').value='';searchPolitician('')">Clear</button>
+        </div>
+        <div id="pol-search-results">
+          <div style="font-size:0.8rem;color:var(--text-dim)">Type a name to find a politician and see their language profile.</div>
+        </div>
+      </div>
+
+      <!-- WORD PROBABILITY LOOKUP -->
+      <div class="card">
+        <div class="card-header">Word / Phrase Probability Lookup</div>
+        <div style="margin-bottom:10px;font-size:0.78rem;color:var(--text-dim);line-height:1.5">
+          Type a word or phrase and a politician name to see the estimated probability they say it, based on their known language profile, party, committee assignments, and topic history.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+          <input type="text" id="prob-word-input" placeholder="Word or phrase e.g. 'sanctions', 'deep state', 'ceasefire'">
+          <input type="text" id="prob-pol-input" placeholder="Politician name e.g. Tom Cotton">
+          <button class="btn btn-primary" onclick="calcWordProb()">Calculate Probability</button>
+        </div>
+        <div id="prob-result"></div>
+      </div>
+
+    </div>
+
+    <!-- TRENDING TERMS + CUSTOM TRACKER -->
+    <div class="grid-2" style="margin-bottom:16px">
+
+      <div class="card">
+        <div class="card-header">Top Trending Terms This Week <span class="badge" id="word-week">–</span></div>
+        <div class="word-grid" id="trending-words"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Track Custom Phrase</div>
+        <div class="form-row">
+          <label>Phrase or keyword to monitor</label>
+          <input type="text" id="custom-phrase" placeholder="e.g. 'maximum pressure', 'China tariffs'">
+        </div>
+        <div class="form-row">
+          <label>Context / Why it matters</label>
+          <input type="text" id="phrase-context" placeholder="e.g. Iran policy escalation signal">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="addPhrase()">Add to Tracker</button>
+          <button class="btn btn-ghost" onclick="loadCapitolWords()">↻ Refresh from API</button>
+        </div>
+        <div id="custom-phrases" style="margin-top:14px"></div>
+      </div>
+
+    </div>
+
+    <!-- FULL POLITICIAN ROSTER -->
+    <div class="section-title">Full Politician Language Profiles</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="pol-cat-btn active" data-pcat="all" onclick="filterPolCat('all')">All</button>
+      <button class="pol-cat-btn" data-pcat="R" onclick="filterPolCat('R')">Republican</button>
+      <button class="pol-cat-btn" data-pcat="D" onclick="filterPolCat('D')">Democrat</button>
+      <button class="pol-cat-btn" data-pcat="admin" onclick="filterPolCat('admin')">Administration</button>
+      <button class="pol-cat-btn" data-pcat="senate" onclick="filterPolCat('senate')">Senate</button>
+      <button class="pol-cat-btn" data-pcat="house" onclick="filterPolCat('house')">House</button>
+    </div>
+    <div id="pol-roster"></div>
+
+    <div class="section-title">Phrase Frequency Chart</div>
+    <div class="card">
+      <div class="card-header">Congressional Term Frequency (30-day rolling)</div>
+      <div id="freq-chart" style="position:relative;height:180px;overflow:hidden"></div>
     </div>
   </div>
 
@@ -968,50 +2062,6 @@
 
   </div>
 
-  <!--  TAB: MY PREDICTIONS  -->
-  <div class="panel" id="panel-predictions">
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="openPredModal()">+ New Prediction</button>
-      <button class="btn btn-ghost" onclick="exportPreds()"> Export JSON</button>
-      <button class="btn btn-ghost" onclick="importPreds()"> Import JSON</button>
-    </div>
-
-    <!-- Stats row -->
-    <div class="grid-4" id="pred-stats" style="margin-bottom:16px">
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent)" id="stat-total">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Total Predictions</div>
-      </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--green)" id="stat-wins">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Correct</div>
-      </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--red)" id="stat-losses">0</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Resolved Wrong</div>
-      </div>
-      <div class="card" style="text-align:center">
-        <div style="font-family:var(--font-mono);font-size:1.8rem;color:var(--accent2)" id="stat-acc">–</div>
-        <div style="font-size:0.75rem;color:var(--text-dim);margin-top:4px">Accuracy</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        Prediction Log
-        <select id="pred-filter" onchange="renderPreds()" style="width:130px;font-size:0.72rem;padding:3px 6px">
-          <option value="all">All</option>
-          <option value="open">Open</option>
-          <option value="win">Correct</option>
-          <option value="loss">Wrong</option>
-        </select>
-      </div>
-      <div id="pred-list">
-        <div class="empty-state">No predictions logged yet. Add your first one!</div>
-      </div>
-    </div>
-  </div>
-
   <!--  TAB: ECONOMIC SIGNALS  -->
   <div class="panel" id="panel-econ">
     <div class="grid-3">
@@ -1079,6 +2129,86 @@
     </div>
   </div>
 
+
+  <!-- TAB: TRAVEL ADVISORIES -->
+  <div class="panel" id="panel-travel">
+
+    <div class="api-note" style="margin-bottom:16px">
+      <strong>US State Department Travel Advisories — April 2026:</strong> Based on official State Dept designations. Level 4 list expanded significantly following onset of US-Iran hostilities (Feb 28, 2026). A worldwide caution alert is currently active. Source: <a href="https://travel.state.gov" target="_blank" style="color:var(--accent2)">travel.state.gov</a>
+    </div>
+
+    <!-- Summary stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--green)" id="count-l1">57</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 1</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Normal Precautions</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--yellow);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--yellow)" id="count-l2">89</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 2</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Increased Caution</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid #e07020;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:#e07020" id="count-l3">26</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 3</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Reconsider Travel</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:4px;padding:12px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--red)" id="count-l4">22</div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:3px;letter-spacing:0.08em">LEVEL 4</div>
+        <div style="font-size:0.7rem;color:var(--text-dim);margin-top:2px">Do Not Travel</div>
+      </div>
+    </div>
+
+    <!-- Worldwide caution banner -->
+    <div style="background:rgba(200,75,75,0.1);border:1px solid rgba(200,75,75,0.4);border-radius:4px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="font-family:var(--font-mono);font-size:0.65rem;font-weight:700;color:var(--red);white-space:nowrap">WORLDWIDE CAUTION ACTIVE</div>
+      <div style="font-size:0.78rem;color:var(--text-dim)">Issued Mar 22, 2026 — Americans worldwide, especially in the Middle East, advised to exercise increased caution due to US-Iran hostilities and elevated threat to US interests globally.</div>
+    </div>
+
+    <!-- Filter + Search -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <input type="text" id="travel-search" placeholder="Search country..." style="flex:1;min-width:180px;max-width:280px" oninput="filterTravel()">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="travel-filter-btn active" data-lv="all" onclick="filterTravel('all')">All</button>
+        <button class="travel-filter-btn" data-lv="1" onclick="filterTravel('1')">L1 Normal</button>
+        <button class="travel-filter-btn" data-lv="2" onclick="filterTravel('2')">L2 Caution</button>
+        <button class="travel-filter-btn" data-lv="3" onclick="filterTravel('3')">L3 Reconsider</button>
+        <button class="travel-filter-btn" data-lv="4" onclick="filterTravel('4')">L4 Do Not Travel</button>
+      </div>
+      <select id="travel-region" onchange="filterTravel()" style="width:150px">
+        <option value="all">All Regions</option>
+        <option value="Middle East">Middle East</option>
+        <option value="Europe">Europe</option>
+        <option value="Africa">Africa</option>
+        <option value="Asia">Asia</option>
+        <option value="Americas">Americas</option>
+        <option value="Oceania">Oceania</option>
+      </select>
+      <select id="travel-sort" onchange="filterTravel()" style="width:140px">
+        <option value="level-desc">Level (High→Low)</option>
+        <option value="level-asc">Level (Low→High)</option>
+        <option value="alpha">Alphabetical</option>
+        <option value="region">By Region</option>
+      </select>
+    </div>
+
+    <!-- Results count -->
+    <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:10px" id="travel-count"></div>
+
+    <!-- Advisory grid -->
+    <div id="travel-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:20px"></div>
+
+    <!-- Recent changes -->
+    <div class="section-title">Recent Advisory Changes</div>
+    <div class="card">
+      <div class="card-header">Upgrades / Downgrades — 2026 <span class="badge">ANALYST TRACKED</span></div>
+      <div id="travel-changes"></div>
+    </div>
+
+  </div>
+
   <!--  TAB: SETTINGS  -->
   <div class="panel" id="panel-settings">
     <div class="grid-2">
@@ -1142,568 +2272,6 @@
 
     </div>
   </div>
-
-
-  <!-- TAB: SCENARIO PLANNER / CONE OF PLAUSIBILITY -->
-  <div class="panel" id="panel-cone">
-
-    <div class="api-note" style="margin-bottom:16px">
-      <strong>Cone of Plausibility:</strong> Define a scenario, set three outcome branches (Base / Optimistic / Pessimistic), assign probabilities that sum to 100%, then drag event boxes onto the cone. The horizontal axis is time. The vertical axis is outcome divergence from the baseline — boxes near the centre line are close to the base case; boxes near the outer edges are tail risks.
-    </div>
-
-    <!-- Scenario title + controls -->
-    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-      <input type="text" id="cone-title" placeholder="Scenario name — e.g. Iran Nuclear Crisis 2025" style="flex:1;min-width:240px">
-      <button class="btn btn-primary" onclick="openConeBoxModal()">+ Add Event</button>
-      <button class="btn btn-ghost" onclick="clearCone()">Clear Canvas</button>
-      <button class="btn btn-ghost" onclick="exportCone()">Export JSON</button>
-      <button class="btn btn-ghost" onclick="importConeFile()">Import JSON</button>
-    </div>
-
-    <!-- Probability sliders -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:16px;align-items:center" id="prob-bar-row">
-      <div style="background:var(--bg2);border:1px solid rgba(75,200,122,0.3);border-radius:3px;padding:8px 12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--green);font-weight:700;letter-spacing:0.1em">BASE CASE</span>
-          <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:700;color:var(--green)" id="prob-val-base">55%</span>
-        </div>
-        <input type="range" min="0" max="100" value="55" id="prob-base" oninput="syncProbs('base')" style="width:100%">
-        <input type="text" id="label-base" value="Status quo / no major escalation" style="width:100%;margin-top:6px;font-size:0.75rem;padding:4px 6px">
-      </div>
-      <div style="background:var(--bg2);border:1px solid rgba(200,75,75,0.3);border-radius:3px;padding:8px 12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--red);font-weight:700;letter-spacing:0.1em">PESSIMISTIC</span>
-          <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:700;color:var(--red)" id="prob-val-pess">25%</span>
-        </div>
-        <input type="range" min="0" max="100" value="25" id="prob-pess" oninput="syncProbs('pess')" style="width:100%">
-        <input type="text" id="label-pess" value="Escalation / worst case" style="width:100%;margin-top:6px;font-size:0.75rem;padding:4px 6px">
-      </div>
-      <div style="background:var(--bg2);border:1px solid rgba(75,127,200,0.3);border-radius:3px;padding:8px 12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--accent2);font-weight:700;letter-spacing:0.1em">OPTIMISTIC</span>
-          <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:700;color:var(--accent2)" id="prob-val-opt">20%</span>
-        </div>
-        <input type="range" min="0" max="100" value="20" id="prob-opt" oninput="syncProbs('opt')" style="width:100%">
-        <input type="text" id="label-opt" value="De-escalation / resolution" style="width:100%;margin-top:6px;font-size:0.75rem;padding:4px 6px">
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:12px 16px;text-align:center">
-        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:4px">TOTAL</div>
-        <div style="font-family:var(--font-mono);font-size:1.4rem;font-weight:700" id="prob-total">100%</div>
-        <div style="font-family:var(--font-mono);font-size:0.6rem;margin-top:3px" id="prob-status" style="color:var(--green)">OK</div>
-      </div>
-    </div>
-
-    <!-- THE CONE CANVAS -->
-    <div style="position:relative;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--bg2);margin-bottom:8px">
-      <canvas id="cone-canvas" style="display:block;width:100%;height:480px"></canvas>
-      <div id="cone-boxes-layer" style="position:absolute;top:0;left:0;width:100%;height:480px;pointer-events:none"></div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-family:var(--font-mono);font-size:0.63rem;color:var(--text-dim)">
-        Drag event boxes on the cone. Horizontal = time. Vertical = deviation from base case. Double-click to edit.
-      </div>
-      <div style="display:flex;gap:14px;font-family:var(--font-mono);font-size:0.63rem">
-        <span style="color:var(--green)">&#9632; Base Case</span>
-        <span style="color:var(--red)">&#9632; Pessimistic</span>
-        <span style="color:var(--accent2)">&#9632; Optimistic</span>
-        <span style="color:var(--yellow)">&#9632; Key Driver</span>
-      </div>
-    </div>
-
-    <!-- Linked Kalshi markets -->
-    <div class="section-title">Linked Kalshi Markets</div>
-    <div class="grid-3" style="margin-bottom:20px">
-      <div class="card">
-        <div class="card-header" style="color:var(--green)">Base Case Market</div>
-        <input type="text" id="market-base" placeholder="Kalshi market ID e.g. IRAN-HORMUZ-2025" style="width:100%;margin-bottom:8px">
-        <div id="market-base-preview" style="font-size:0.75rem;color:var(--text-dim)">Enter a market ID above to link it</div>
-      </div>
-      <div class="card">
-        <div class="card-header" style="color:var(--red)">Pessimistic Market</div>
-        <input type="text" id="market-pess" placeholder="Kalshi market ID" style="width:100%;margin-bottom:8px">
-        <div id="market-pess-preview" style="font-size:0.75rem;color:var(--text-dim)">Enter a market ID above to link it</div>
-      </div>
-      <div class="card">
-        <div class="card-header" style="color:var(--accent2)">Optimistic Market</div>
-        <input type="text" id="market-opt" placeholder="Kalshi market ID" style="width:100%;margin-bottom:8px">
-        <div id="market-opt-preview" style="font-size:0.75rem;color:var(--text-dim)">Enter a market ID above to link it</div>
-      </div>
-    </div>
-
-    <!-- Event log -->
-    <div class="section-title">Event Log <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim)" id="cone-event-count"></span></div>
-    <div id="cone-event-log" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-bottom:20px"></div>
-
-  </div>
-
-
-</div><!-- /#content -->
-
-
-<script>
-// ── CONE OF PLAUSIBILITY ──
-let coneState = LSGet('cone2', {
-  title: '',
-  probs: { base: 55, pess: 25, opt: 20 },
-  labels: { base: 'Status quo / no major escalation', pess: 'Escalation / worst case', opt: 'De-escalation / resolution' },
-  markets: { base: '', pess: '', opt: '' },
-  events: []
-});
-let coneNextId = Math.max(0, ...coneState.events.map(e => e.id || 0)) + 1;
-let coneDragging = null;
-let coneCanvas = null;
-let coneCtx = null;
-let CONE_W = 0, CONE_H = 480;
-const APEX_X_PCT = 0.06;
-const CONE_COLORS = {
-  base: { line: '#4bc87a', fill: 'rgba(75,200,122,0.07)', box: 'rgba(75,200,122,0.12)', border: '#4bc87a' },
-  pess: { line: '#c84b4b', fill: 'rgba(200,75,75,0.07)',  box: 'rgba(200,75,75,0.12)',  border: '#c84b4b' },
-  opt:  { line: '#4b7fc8', fill: 'rgba(75,127,200,0.07)', box: 'rgba(75,127,200,0.12)', border: '#4b7fc8' },
-  driver: { line: '#c8a84b', fill: 'rgba(200,168,75,0.07)', box: 'rgba(200,168,75,0.12)', border: '#c8a84b' },
-};
-
-function saveCone() { LSSet('cone2', coneState); }
-
-function syncProbs(changed) {
-  const base = +document.getElementById('prob-base').value;
-  const pess = +document.getElementById('prob-pess').value;
-  const opt  = +document.getElementById('prob-opt').value;
-  coneState.probs = { base, pess, opt };
-  const total = base + pess + opt;
-  document.getElementById('prob-val-base').textContent = base + '%';
-  document.getElementById('prob-val-pess').textContent = pess + '%';
-  document.getElementById('prob-val-opt').textContent  = opt  + '%';
-  const totalEl  = document.getElementById('prob-total');
-  const statusEl = document.getElementById('prob-status');
-  totalEl.textContent  = total + '%';
-  totalEl.style.color  = total === 100 ? 'var(--green)' : 'var(--red)';
-  statusEl.textContent = total === 100 ? 'balanced' : 'must equal 100%';
-  statusEl.style.color = total === 100 ? 'var(--green)' : 'var(--red)';
-  saveCone();
-  drawCone();
-}
-
-// ── DRAW CONE ──
-function drawCone() {
-  coneCanvas = document.getElementById('cone-canvas');
-  if (!coneCanvas) return;
-  const dpr = window.devicePixelRatio || 1;
-  CONE_W = coneCanvas.offsetWidth;
-  CONE_H = 480;
-  coneCanvas.width  = CONE_W * dpr;
-  coneCanvas.height = CONE_H * dpr;
-  coneCanvas.style.width  = CONE_W + 'px';
-  coneCanvas.style.height = CONE_H + 'px';
-  coneCtx = coneCanvas.getContext('2d');
-  coneCtx.scale(dpr, dpr);
-  const ctx = coneCtx;
-  ctx.clearRect(0, 0, CONE_W, CONE_H);
-
-  const apexX = CONE_W * APEX_X_PCT;
-  const midY  = CONE_H / 2;
-  const rightX = CONE_W - 20;
-
-  // Background
-  ctx.fillStyle = '#13161b';
-  ctx.fillRect(0, 0, CONE_W, CONE_H);
-
-  // Time axis labels
-  ctx.font = '10px "Courier New", monospace';
-  ctx.fillStyle = '#4a5068';
-  ctx.textAlign = 'center';
-  const timeLabels = ['NOW', 'NEAR-TERM', 'MID-TERM', 'LONG-TERM'];
-  timeLabels.forEach((label, i) => {
-    const x = apexX + (rightX - apexX) * (i / (timeLabels.length - 1));
-    ctx.fillText(label, x, CONE_H - 8);
-    if (i > 0) {
-      ctx.save();
-      ctx.strokeStyle = '#1e2230';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 6]);
-      ctx.beginPath();
-      ctx.moveTo(x, 20);
-      ctx.lineTo(x, CONE_H - 20);
-      ctx.stroke();
-      ctx.restore();
-    }
-  });
-
-  // Y axis label
-  ctx.save();
-  ctx.translate(14, CONE_H / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#4a5068';
-  ctx.font = '10px "Courier New", monospace';
-  ctx.fillText('OUTCOME DIVERGENCE', 0, 0);
-  ctx.restore();
-
-  // Probs determine cone arm spread
-  const { base, pess, opt } = coneState.probs;
-  const total = base + pess + opt || 100;
-  // Pessimistic arm opens upward (bad outcomes), optimistic downward
-  const pessSpread = (pess / total) * (CONE_H * 0.44);
-  const optSpread  = (opt  / total) * (CONE_H * 0.44);
-  const baseSpread = (base / total) * (CONE_H * 0.22);
-
-  // Fill base case band (centre)
-  ctx.beginPath();
-  ctx.moveTo(apexX, midY);
-  ctx.lineTo(rightX, midY - baseSpread);
-  ctx.lineTo(rightX, midY + baseSpread);
-  ctx.closePath();
-  ctx.fillStyle = CONE_COLORS.base.fill;
-  ctx.fill();
-
-  // Fill pessimistic band (upper, opening upward from midY - baseSpread)
-  ctx.beginPath();
-  ctx.moveTo(apexX, midY);
-  ctx.lineTo(rightX, midY - baseSpread);
-  ctx.lineTo(rightX, midY - baseSpread - pessSpread);
-  ctx.closePath();
-  ctx.fillStyle = CONE_COLORS.pess.fill;
-  ctx.fill();
-
-  // Fill optimistic band (lower, opening downward from midY + baseSpread)
-  ctx.beginPath();
-  ctx.moveTo(apexX, midY);
-  ctx.lineTo(rightX, midY + baseSpread);
-  ctx.lineTo(rightX, midY + baseSpread + optSpread);
-  ctx.closePath();
-  ctx.fillStyle = CONE_COLORS.opt.fill;
-  ctx.fill();
-
-  // Outer cone boundary (dashed)
-  const outerSpread = pessSpread + baseSpread;
-  ctx.save();
-  ctx.setLineDash([5, 5]);
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(100,110,140,0.4)';
-  ctx.beginPath(); ctx.moveTo(apexX, midY); ctx.lineTo(rightX, midY - outerSpread); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(apexX, midY); ctx.lineTo(rightX, midY + (optSpread + baseSpread)); ctx.stroke();
-  ctx.restore();
-
-  // Arm boundary lines
-  const arms = [
-    { y: midY - baseSpread, color: CONE_COLORS.base.line, label: coneState.labels.base || 'Base' },
-    { y: midY + baseSpread, color: CONE_COLORS.base.line, label: '' },
-    { y: midY - baseSpread - pessSpread, color: CONE_COLORS.pess.line, label: coneState.labels.pess || 'Pessimistic' },
-    { y: midY + baseSpread + optSpread,  color: CONE_COLORS.opt.line,  label: coneState.labels.opt || 'Optimistic' },
-  ];
-  arms.forEach(arm => {
-    ctx.save();
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = arm.color;
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath();
-    ctx.moveTo(apexX, midY);
-    ctx.lineTo(rightX, arm.y);
-    ctx.stroke();
-    ctx.restore();
-    if (arm.label) {
-      ctx.font = '10px "Courier New", monospace';
-      ctx.fillStyle = arm.color;
-      ctx.globalAlpha = 0.8;
-      ctx.textAlign = 'right';
-      ctx.fillText(arm.label, rightX - 4, arm.y - 4);
-      ctx.globalAlpha = 1;
-    }
-  });
-
-  // Centre baseline
-  ctx.save();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(200,168,75,0.5)';
-  ctx.beginPath();
-  ctx.moveTo(apexX, midY);
-  ctx.lineTo(rightX, midY);
-  ctx.stroke();
-  ctx.restore();
-
-  // Apex dot
-  ctx.beginPath();
-  ctx.arc(apexX, midY, 5, 0, Math.PI * 2);
-  ctx.fillStyle = '#c8a84b';
-  ctx.fill();
-
-  // "NOW" label at apex
-  ctx.font = 'bold 10px "Courier New", monospace';
-  ctx.fillStyle = '#c8a84b';
-  ctx.textAlign = 'left';
-  ctx.fillText('NOW', apexX + 8, midY - 8);
-
-  // Render event boxes
-  renderConeBoxes();
-  renderConeEventLog();
-  updateMarketPreviews();
-}
-
-function getConeGeometry() {
-  const apexX = CONE_W * APEX_X_PCT;
-  const midY  = CONE_H / 2;
-  const rightX = CONE_W - 20;
-  const { base, pess, opt } = coneState.probs;
-  const total = base + pess + opt || 100;
-  return {
-    apexX, midY, rightX,
-    pessSpread: (pess / total) * (CONE_H * 0.44),
-    optSpread:  (opt  / total) * (CONE_H * 0.44),
-    baseSpread: (base / total) * (CONE_H * 0.22),
-  };
-}
-
-function renderConeBoxes() {
-  const layer = document.getElementById('cone-boxes-layer');
-  if (!layer) return;
-  layer.innerHTML = '';
-  layer.style.pointerEvents = 'auto';
-
-  coneState.events.forEach(ev => {
-    const box = document.createElement('div');
-    const col = CONE_COLORS[ev.type] || CONE_COLORS.base;
-    const typeLabel = ev.type === 'base' ? 'BASE' : ev.type === 'pess' ? 'PESSIMISTIC' : ev.type === 'opt' ? 'OPTIMISTIC' : 'DRIVER';
-
-    box.style.cssText = [
-      'position:absolute',
-      'left:' + ev.x + 'px',
-      'top:' + ev.y + 'px',
-      'min-width:120px',
-      'max-width:175px',
-      'background:' + col.box,
-      'border:1.5px solid ' + col.border,
-      'border-radius:3px',
-      'padding:6px 10px',
-      'cursor:grab',
-      'z-index:10',
-      'box-shadow:0 2px 12px rgba(0,0,0,0.5)',
-      'transform:translate(-50%,-50%)',
-    ].join(';');
-
-    box.innerHTML =
-      '<div style="font-family:\'Courier New\',monospace;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;color:' + col.border + ';margin-bottom:3px">' + typeLabel + '</div>' +
-      '<div style="font-size:0.78rem;font-weight:600;color:#f0f2f8;line-height:1.3">' + ev.title + '</div>' +
-      (ev.notes ? '<div style="font-size:0.65rem;color:#7a8099;margin-top:3px;line-height:1.3">' + ev.notes + '</div>' : '') +
-      '<button style="position:absolute;top:3px;right:5px;background:none;border:none;color:#7a8099;cursor:pointer;font-size:0.65rem;padding:0;line-height:1" data-del="' + ev.id + '">x</button>';
-
-    // Delete
-    box.querySelector('[data-del]').addEventListener('click', e => {
-      e.stopPropagation();
-      coneState.events = coneState.events.filter(e => e.id !== ev.id);
-      saveCone(); drawCone();
-    });
-
-    // Drag
-    let dragging = false, startMX, startMY, startEX, startEY;
-    box.addEventListener('mousedown', e => {
-      if (e.target.dataset.del) return;
-      dragging = true;
-      startMX = e.clientX; startMY = e.clientY;
-      startEX = ev.x; startEY = ev.y;
-      box.style.cursor = 'grabbing';
-      box.style.zIndex = 50;
-      e.preventDefault();
-    });
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      const rect = layer.getBoundingClientRect();
-      ev.x = Math.max(10, Math.min(CONE_W - 10, startEX + e.clientX - startMX));
-      ev.y = Math.max(10, Math.min(CONE_H - 10, startEY + e.clientY - startMY));
-      box.style.left = ev.x + 'px';
-      box.style.top  = ev.y + 'px';
-    });
-    document.addEventListener('mouseup', () => {
-      if (!dragging) return;
-      dragging = false;
-      box.style.cursor = 'grab';
-      box.style.zIndex = 10;
-      saveCone();
-    });
-
-    // Double-click to edit
-    box.addEventListener('dblclick', () => openConeBoxModal(ev.id));
-
-    layer.appendChild(box);
-  });
-}
-
-function renderConeEventLog() {
-  const el = document.getElementById('cone-event-log');
-  const countEl = document.getElementById('cone-event-count');
-  if (!el) return;
-  if (countEl) countEl.textContent = '(' + coneState.events.length + ' events)';
-  if (!coneState.events.length) {
-    el.innerHTML = '<div style="font-size:0.8rem;color:var(--text-dim);padding:8px">No events added yet. Click "+ Add Event" to place one on the cone.</div>';
-    return;
-  }
-  el.innerHTML = coneState.events.map(ev => {
-    const col = CONE_COLORS[ev.type] || CONE_COLORS.base;
-    const typeLabel = ev.type === 'base' ? 'BASE' : ev.type === 'pess' ? 'PESSIMISTIC' : ev.type === 'opt' ? 'OPTIMISTIC' : 'DRIVER';
-    return '<div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid ' + col.border + ';border-radius:3px;padding:10px 12px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
-        '<div style="font-weight:600;font-size:0.83rem;color:var(--text-hi)">' + ev.title + '</div>' +
-        '<span style="font-family:var(--font-mono);font-size:0.58rem;font-weight:700;color:' + col.border + ';margin-left:8px;white-space:nowrap">' + typeLabel + '</span>' +
-      '</div>' +
-      (ev.notes ? '<div style="font-size:0.72rem;color:var(--text-dim);line-height:1.4">' + ev.notes + '</div>' : '') +
-    '</div>';
-  }).join('');
-}
-
-function updateMarketPreviews() {
-  ['base','pess','opt'].forEach(k => {
-    const input = document.getElementById('market-' + k);
-    const preview = document.getElementById('market-' + k + '-preview');
-    if (!input || !preview) return;
-    const id = input.value.trim().toUpperCase();
-    if (!id) { preview.textContent = 'Enter a market ID above to link it'; preview.style.color = 'var(--text-dim)'; return; }
-    const mkt = allMarkets.find(m => m.id === id);
-    if (mkt) {
-      preview.innerHTML = '<span style="color:var(--text-hi);font-size:0.78rem">' + mkt.q + '</span><br>' +
-        '<span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--green)">YES ' + mkt.yes + '¢</span> / ' +
-        '<span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--red)">NO ' + mkt.no + '¢</span>';
-    } else {
-      preview.textContent = 'ID "' + id + '" not found in feed';
-      preview.style.color = 'var(--text-dim)';
-    }
-  });
-}
-
-// ── ADD/EDIT BOX MODAL ──
-let editingConeId = null;
-
-function openConeBoxModal(editId) {
-  editingConeId = editId || null;
-  const ev = editId ? coneState.events.find(e => e.id === editId) : null;
-  document.getElementById('cb-title').value = ev ? ev.title : '';
-  document.getElementById('cb-type').value  = ev ? ev.type  : 'base';
-  document.getElementById('cb-notes').value = ev ? (ev.notes || '') : '';
-  document.getElementById('cone-box-modal').classList.add('open');
-}
-
-window.saveConeBox = function() {
-  const title = document.getElementById('cb-title').value.trim();
-  if (!title) { alert('Please enter an event title.'); return; }
-  const type  = document.getElementById('cb-type').value;
-  const notes = document.getElementById('cb-notes').value.trim();
-
-  if (editingConeId) {
-    const ev = coneState.events.find(e => e.id === editingConeId);
-    if (ev) { ev.title = title; ev.type = type; ev.notes = notes; }
-  } else {
-    // Default position: spread events across the cone based on type
-    const g = getConeGeometry();
-    const xPct = 0.3 + Math.random() * 0.45;
-    const x = g.apexX + (g.rightX - g.apexX) * xPct;
-    let y = g.midY;
-    if (type === 'pess')   y = g.midY - g.baseSpread - g.pessSpread * 0.5;
-    if (type === 'opt')    y = g.midY + g.baseSpread + g.optSpread  * 0.5;
-    if (type === 'driver') y = g.midY - g.pessSpread * 0.25;
-    y += (Math.random() - 0.5) * 30;
-    coneState.events.push({ id: coneNextId++, title, type, notes, x: Math.round(x), y: Math.round(y) });
-  }
-  saveCone();
-  closeModal('cone-box-modal');
-  drawCone();
-};
-
-function clearCone() {
-  if (!confirm('Remove all events from the canvas?')) return;
-  coneState.events = [];
-  saveCone(); drawCone();
-}
-
-function exportCone() {
-  const blob = new Blob([JSON.stringify(coneState, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'cone_' + (coneState.title || 'scenario').replace(/\s+/g,'_').slice(0,30) + '_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-}
-
-function importConeFile() {
-  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
-  inp.onchange = e => {
-    const r = new FileReader();
-    r.onload = ev => {
-      try {
-        const d = JSON.parse(ev.target.result);
-        if (d.events) { Object.assign(coneState, d); saveCone(); initConeTab(); }
-        else alert('Invalid cone JSON file.');
-      } catch { alert('Could not parse file.'); }
-    };
-    r.readAsText(e.target.files[0]);
-  };
-  inp.click();
-}
-
-function initConeTab() {
-  // Restore UI state
-  document.getElementById('cone-title').value   = coneState.title || '';
-  document.getElementById('prob-base').value    = coneState.probs.base;
-  document.getElementById('prob-pess').value    = coneState.probs.pess;
-  document.getElementById('prob-opt').value     = coneState.probs.opt;
-  document.getElementById('prob-val-base').textContent = coneState.probs.base + '%';
-  document.getElementById('prob-val-pess').textContent = coneState.probs.pess + '%';
-  document.getElementById('prob-val-opt').textContent  = coneState.probs.opt  + '%';
-  document.getElementById('label-base').value   = coneState.labels.base || '';
-  document.getElementById('label-pess').value   = coneState.labels.pess || '';
-  document.getElementById('label-opt').value    = coneState.labels.opt  || '';
-  const total = coneState.probs.base + coneState.probs.pess + coneState.probs.opt;
-  document.getElementById('prob-total').textContent = total + '%';
-  document.getElementById('prob-total').style.color = total === 100 ? 'var(--green)' : 'var(--red)';
-  drawCone();
-}
-
-// Save label edits
-['base','pess','opt'].forEach(k => {
-  const inp = document.getElementById('label-' + k);
-  if (inp) inp.addEventListener('input', function() { coneState.labels[k] = this.value; saveCone(); drawCone(); });
-});
-['base','pess','opt'].forEach(k => {
-  const inp = document.getElementById('market-' + k);
-  if (inp) inp.addEventListener('input', function() { coneState.markets[k] = this.value; saveCone(); updateMarketPreviews(); });
-});
-document.getElementById('cone-title').addEventListener('input', function() { coneState.title = this.value; saveCone(); });
-
-// Redraw on resize
-window.addEventListener('resize', () => { if (document.getElementById('panel-cone').classList.contains('active')) drawCone(); });
-
-// Init on tab click
-document.querySelector('[data-tab="cone"]').addEventListener('click', () => {
-  setTimeout(initConeTab, 60);
-});
-</script>
-
-<!-- CONE BOX MODAL -->
-<div class="modal-overlay" id="cone-box-modal">
-  <div class="modal" style="width:420px">
-    <h3>Add Event to Cone</h3>
-    <div class="form-row">
-      <label>Event Title</label>
-      <input type="text" id="cb-title" placeholder="e.g. IRGC mines northern Hormuz approach">
-    </div>
-    <div class="form-row">
-      <label>Branch</label>
-      <select id="cb-type">
-        <option value="base">Base Case — expected / most likely path</option>
-        <option value="pess">Pessimistic — escalation / worst case</option>
-        <option value="opt">Optimistic — de-escalation / resolution</option>
-        <option value="driver">Key Driver — a variable that shifts the outcome</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>Notes / Significance</label>
-      <textarea id="cb-notes" style="height:70px" placeholder="Why does this event matter? What does it trigger or prevent?"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('cone-box-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveConeBox()">Place on Cone</button>
-    </div>
-  </div>
-</div>
-
-
 
 <style>
   .ctx-item{padding:7px 16px;font-size:0.8rem;cursor:pointer;color:var(--text)}
@@ -2510,7 +3078,7 @@ function makeMarketPred() {
   openPredModal();
   closeCtx();
   // Switch to predictions tab
-  document.querySelector('[data-tab="predictions"]').click();
+  // predictions tab removed
 }
 function renderFlagged() {
   const el = document.getElementById('flagged-notes');
@@ -2604,7 +3172,7 @@ const settings = LSGet('settings', {});
 const interval = parseInt(settings.refreshInterval || '600000');
 if (interval > 0) setInterval(() => { loadNews(); loadKalshi(); }, interval);
 
-console.log('%cPrediction Buddy loaded.', 'color: #c8a84b; font-family: monospace; font-size: 14px;');
+console.log('%cGlassball loaded.', 'color: #c8a84b; font-family: monospace; font-size: 14px;');
 </script>
 
 <style>
@@ -2780,7 +3348,7 @@ document.querySelector('[data-tab="livecams"]').addEventListener('click', () => 
 // Chart defaults matching dashboard theme
 Chart.defaults.color = '#7a8099';
 Chart.defaults.borderColor = '#2a2f3d';
-Chart.defaults.font.family = 'Calibri, Trebuchet MS, sans-serif';
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
 Chart.defaults.font.size = 11;
 
 // ── TRANSIT HUBS DATA ──
@@ -3285,6 +3853,234 @@ document.querySelector('[data-tab="econ"]').addEventListener('click', () => {
   }, 80);
 });
 </script>
+
+<script>
+// ── US STATE DEPT TRAVEL ADVISORIES ──
+const TRAVEL_ADVISORIES = [
+  // LEVEL 4 — DO NOT TRAVEL
+  { country:'Afghanistan',            level:4, region:'Asia',        risks:['T','C','U','K'], changed:'2026-01', trend:'stable',   notes:'Taliban control, zero US consular presence, active conflict.' },
+  { country:'Belarus',                level:4, region:'Europe',      risks:['U','D','C'],     changed:'2025-06', trend:'stable',   notes:'Wrongful detention risk, Lukashenko regime, border with active conflict zone.' },
+  { country:'Burma (Myanmar)',        level:4, region:'Asia',        risks:['C','U','T'],     changed:'2025-03', trend:'stable',   notes:'Military junta, ongoing civil war, arbitrary detention.' },
+  { country:'Burkina Faso',           level:4, region:'Africa',      risks:['T','U','C'],     changed:'2024-09', trend:'stable',   notes:'Junta government, jihadist insurgency across Sahel.' },
+  { country:'Central African Rep.',   level:4, region:'Africa',      risks:['C','T','U'],     changed:'2024-01', trend:'stable',   notes:'Armed group activity, limited government control outside capital.' },
+  { country:'Gaza',                   level:4, region:'Middle East', risks:['C','T','U'],     changed:'2023-10', trend:'stable',   notes:'Active armed conflict. No US consular services. Hamas/IDF operations ongoing.' },
+  { country:'Haiti',                  level:4, region:'Americas',    risks:['C','K','U'],     changed:'2024-03', trend:'worsening',notes:'Gang control of Port-au-Prince, kidnapping endemic, no functioning government.' },
+  { country:'Iran',                   level:4, region:'Middle East', risks:['T','C','D','K'], changed:'2026-03', trend:'worsening',notes:'US-Iran hostilities active since Feb 28. Arbitrary arrest, no US embassy, zero consular access.' },
+  { country:'Iraq',                   level:4, region:'Middle East', risks:['T','C','K','U'], changed:'2026-03', trend:'worsening',notes:'PMF activity, militia threats to US interests, risk of spillover from Iran conflict.' },
+  { country:'Lebanon',                level:4, region:'Middle East', risks:['T','C','U'],     changed:'2026-03', trend:'worsening',notes:'Hezbollah operations, ongoing Israel-Hezbollah cross-border strikes, infrastructure collapse.' },
+  { country:'Libya',                  level:4, region:'Africa',      risks:['C','T','U','K'], changed:'2024-01', trend:'stable',   notes:'Rival governments, armed militia factions, no stable security environment.' },
+  { country:'Mali',                   level:4, region:'Africa',      risks:['T','C','K'],     changed:'2024-06', trend:'stable',   notes:'Junta expelled French/UN forces, jihadist control of large territory.' },
+  { country:'Niger',                  level:4, region:'Africa',      risks:['T','C','U'],     changed:'2024-07', trend:'stable',   notes:'Military coup, US military withdrawn, jihadist groups active.' },
+  { country:'North Korea',            level:4, region:'Asia',        risks:['D','C','T'],     changed:'2017-09', trend:'stable',   notes:'Arbitrary detention, no US embassy, regime unpredictability, nuclear program.' },
+  { country:'Russia',                 level:4, region:'Europe',      risks:['C','U','D'],     changed:'2022-02', trend:'stable',   notes:'Ongoing Ukraine war, wrongful detention (Evan Gershkovich precedent), arbitrary arrest risk.' },
+  { country:'Somalia',                level:4, region:'Africa',      risks:['T','C','K','U'], changed:'2020-01', trend:'stable',   notes:'Al-Shabaab terrorism, no functioning central government, piracy.' },
+  { country:'South Sudan',            level:4, region:'Africa',      risks:['C','U','T'],     changed:'2023-01', trend:'stable',   notes:'Inter-ethnic violence, civil conflict, extreme humanitarian crisis.' },
+  { country:'Sudan',                  level:4, region:'Africa',      risks:['C','U','T'],     changed:'2023-04', trend:'worsening',notes:'RSF-SAF armed conflict, mass atrocities, complete collapse of services in Khartoum.' },
+  { country:'Syria',                  level:4, region:'Middle East', risks:['C','T','U','K'], changed:'2011-03', trend:'improving',notes:'Post-Assad transitional period. Ongoing armed group activity. Fragile.' },
+  { country:'Ukraine',                level:4, region:'Europe',      risks:['C','U'],         changed:'2022-02', trend:'stable',   notes:'Active Russian invasion. Missile/drone strikes across country. No US embassy services in country.' },
+  { country:'Venezuela',              level:4, region:'Americas',    risks:['C','K','D','U'], changed:'2023-01', trend:'stable',   notes:'Maduro regime, arbitrary detention, extreme crime, no US consular services.' },
+  { country:'Yemen',                  level:4, region:'Middle East', risks:['T','C','K','U'], changed:'2015-03', trend:'stable',   notes:'Houthi control of north, active Saudi/US coalition operations, extreme humanitarian crisis.' },
+
+  // LEVEL 3 — RECONSIDER TRAVEL
+  { country:'Bahrain',                level:3, region:'Middle East', risks:['T','C'],         changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026. Missile/drone threat from Iran conflict. Non-emergency US gov staff ordered to leave.' },
+  { country:'Colombia',               level:3, region:'Americas',    risks:['C','T','K'],     changed:'2025-01', trend:'stable',   notes:'ELN and drug cartel violence in border regions and some cities.' },
+  { country:'Ecuador',                level:3, region:'Americas',    risks:['C','K'],         changed:'2024-01', trend:'worsening',notes:'Criminal gang violence surging, state of emergency declared in several provinces.' },
+  { country:'El Salvador',            level:3, region:'Americas',    risks:['C'],             changed:'2024-06', trend:'improving',notes:'Gang crackdown improved security but arbitrary detention concerns under Bukele.' },
+  { country:'Ethiopia',               level:3, region:'Africa',      risks:['C','U','T'],     changed:'2022-11', trend:'stable',   notes:'Tigray conflict aftermath, regional ethnic violence, Oromo insurgency.' },
+  { country:'Honduras',               level:3, region:'Americas',    risks:['C','K'],         changed:'2023-01', trend:'stable',   notes:'High homicide rate, organized crime, limited law enforcement effectiveness.' },
+  { country:'Jamaica',                level:3, region:'Americas',    risks:['C'],             changed:'2023-06', trend:'stable',   notes:'High violent crime, states of emergency in Kingston and St. James parishes.' },
+  { country:'Kosovo',                 level:3, region:'Europe',      risks:['U','C'],         changed:'2024-12', trend:'worsening',notes:'Ethnic Serb tensions, roadblocks, sporadic violence near Serbia border.' },
+  { country:'Kuwait',                 level:3, region:'Middle East', risks:['T'],             changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026 due to Iran conflict spillover risk and missile threat.' },
+  { country:'Mozambique',             level:3, region:'Africa',      risks:['T','C'],         changed:'2022-01', trend:'stable',   notes:'Al-Shabaab insurgency in Cabo Delgado, election violence in south.' },
+  { country:'Oman',                   level:3, region:'Middle East', risks:['T'],             changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026. Regional spillover risk from Iran-US hostilities.' },
+  { country:'Pakistan',               level:3, region:'Asia',        risks:['T','C','U'],     changed:'2023-09', trend:'stable',   notes:'TTP terrorism, sectarian violence, political instability post-Imran Khan.' },
+  { country:'Papua New Guinea',       level:3, region:'Oceania',     risks:['C'],             changed:'2024-01', trend:'stable',   notes:'Tribal violence, high crime, limited emergency services.' },
+  { country:'Qatar',                  level:3, region:'Middle East', risks:['T'],             changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026. US Central Command HQ at Al Udeid. Iran threat environment elevated.' },
+  { country:'Saudi Arabia',           level:3, region:'Middle East', risks:['T','C'],         changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026. Ballistic missile threat from Houthis, Iran conflict spillover risk.' },
+  { country:'Turkey',                 level:3, region:'Europe',      risks:['T','U'],         changed:'2024-01', trend:'stable',   notes:'PKK attacks, terrorism threat in border regions and Istanbul, political tensions.' },
+  { country:'UAE',                    level:3, region:'Middle East', risks:['T'],             changed:'2026-03', trend:'worsening',notes:'Upgraded Mar 2026. Houthi drone threat, Iran conflict proximity, US interests targeted.' },
+  { country:'West Bank',              level:3, region:'Middle East', risks:['T','U','C'],     changed:'2023-10', trend:'worsening',notes:'IDF operations, settler violence, Hamas activity. Deteriorating security.' },
+  { country:'Zimbabwe',               level:3, region:'Africa',      risks:['C','U'],         changed:'2024-01', trend:'stable',   notes:'Economic collapse, political repression, crime.' },
+
+  // LEVEL 2 — EXERCISE INCREASED CAUTION (geopolitically relevant selection)
+  { country:'Algeria',                level:2, region:'Africa',      risks:['T','C'],         changed:'2024-01', trend:'stable',   notes:'Terrorism risk in border regions, political tension.' },
+  { country:'Brazil',                 level:2, region:'Americas',    risks:['C'],             changed:'2024-01', trend:'stable',   notes:'High crime in urban areas, gang activity in Rio and major cities.' },
+  { country:'China',                  level:2, region:'Asia',        risks:['D'],             changed:'2024-03', trend:'stable',   notes:'Arbitrary enforcement of local laws, wrongful exit ban risk for US citizens.' },
+  { country:'Cuba',                   level:2, region:'Americas',    risks:['U','C'],         changed:'2024-01', trend:'stable',   notes:'Civil unrest, economic crisis, limited consular access.' },
+  { country:'Egypt',                  level:2, region:'Middle East', risks:['T','U'],         changed:'2024-01', trend:'stable',   notes:'Sinai Peninsula terrorism, political instability risk.' },
+  { country:'India',                  level:2, region:'Asia',        risks:['C','T'],         changed:'2024-01', trend:'stable',   notes:'Terrorism risk in Kashmir and border regions, crime in major cities.' },
+  { country:'Indonesia',              level:2, region:'Asia',        risks:['T','C'],         changed:'2024-01', trend:'stable',   notes:'Terrorism threat, natural disaster risk, Papua unrest.' },
+  { country:'Israel',                 level:2, region:'Middle East', risks:['T','U','C'],     changed:'2026-03', trend:'worsening',notes:'Active conflict on multiple borders. Rocket threat. Travel near Gaza/Lebanon borders advisory Level 4.' },
+  { country:'Jordan',                 level:2, region:'Middle East', risks:['T','U'],         changed:'2024-06', trend:'worsening',notes:'Heightened following Iran conflict. Protest activity, border region risk.' },
+  { country:'Kazakhstan',             level:2, region:'Asia',        risks:['U'],             changed:'2024-01', trend:'stable',   notes:'Political instability risk, proximity to Russia.' },
+  { country:'Kenya',                  level:2, region:'Africa',      risks:['T','C','U'],     changed:'2024-01', trend:'stable',   notes:'Al-Shabaab terrorism in border regions, crime in Nairobi.' },
+  { country:'Mexico',                 level:2, region:'Americas',    risks:['C','K'],         changed:'2024-01', trend:'stable',   notes:'National Level 2, but multiple states are Level 4 (Tamaulipas, Sinaloa, Colima). Cartel violence.' },
+  { country:'Nigeria',                level:2, region:'Africa',      risks:['T','C','K','U'], changed:'2024-01', trend:'stable',   notes:'Boko Haram north, Niger Delta crime, political instability.' },
+  { country:'Philippines',            level:2, region:'Asia',        risks:['T','C'],         changed:'2024-01', trend:'stable',   notes:'Abu Sayyaf terrorism in Mindanao, South China Sea tensions.' },
+  { country:'South Africa',           level:2, region:'Africa',      risks:['C'],             changed:'2024-01', trend:'stable',   notes:'High crime rate, carjacking, robbery in major cities.' },
+  { country:'Tanzania',               level:2, region:'Africa',      risks:['T','C'],         changed:'2024-01', trend:'stable',   notes:'Terrorism threat in border regions, crime in Dar es Salaam.' },
+  { country:'Tunisia',                level:2, region:'Africa',      risks:['T','U','C'],     changed:'2024-01', trend:'stable',   notes:'Terrorism risk, political repression under Saied, economic instability.' },
+
+  // LEVEL 1 — NORMAL PRECAUTIONS (key allies/relevant countries)
+  { country:'Australia',              level:1, region:'Oceania',     risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions.' },
+  { country:'Canada',                 level:1, region:'Americas',    risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions.' },
+  { country:'France',                 level:1, region:'Europe',      risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions. Terrorism awareness in public spaces.' },
+  { country:'Germany',                level:1, region:'Europe',      risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions.' },
+  { country:'Japan',                  level:1, region:'Asia',        risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions. Natural disaster awareness.' },
+  { country:'New Zealand',            level:1, region:'Oceania',     risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions.' },
+  { country:'South Korea',            level:1, region:'Asia',        risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions. DPRK threat awareness.' },
+  { country:'Taiwan',                 level:1, region:'Asia',        risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions. PRC military exercise risk.' },
+  { country:'United Kingdom',         level:1, region:'Europe',      risks:[],                changed:'2024-01', trend:'stable',   notes:'Standard precautions. Terrorism awareness.' },
+];
+
+const RECENT_CHANGES = [
+  { country:'Bahrain',      from:2, to:4, date:'2026-03-02', reason:'US-Iran hostilities. Non-emergency US gov staff ordered to depart.' },
+  { country:'Iran',         from:4, to:4, date:'2026-03-01', reason:'Reissued following US military strikes Feb 28. Consular services suspended.' },
+  { country:'Iraq',         from:4, to:4, date:'2026-03-01', reason:'Reissued. PMF escalation, US base attacks ongoing.' },
+  { country:'Lebanon',      from:4, to:4, date:'2026-03-01', reason:'Reissued. Hezbollah-Israel strikes ongoing, infrastructure collapse.' },
+  { country:'Saudi Arabia', from:2, to:3, date:'2026-03-05', reason:'Upgraded. Houthi ballistic missile threat, Iran spillover risk.' },
+  { country:'UAE',          from:1, to:3, date:'2026-03-05', reason:'Upgraded. Houthi drone threat to Dubai, Abu Dhabi. US interests targeted.' },
+  { country:'Kuwait',       from:2, to:3, date:'2026-03-05', reason:'Upgraded. Proximity to Iranian missile threat vectors.' },
+  { country:'Qatar',        from:1, to:3, date:'2026-03-05', reason:'Upgraded. US CENTCOM at Al Udeid. Iran threat environment elevated.' },
+  { country:'Oman',         from:2, to:3, date:'2026-03-05', reason:'Upgraded. Gulf region security posture shift.' },
+  { country:'Syria',        from:4, to:4, date:'2026-01-15', reason:'Reissued post-Assad fall. Transitional instability, armed group activity.' },
+  { country:'Israel',       from:2, to:2, date:'2026-03-10', reason:'Reissued. Conflict on multiple borders. Specific border areas remain Level 4.' },
+  { country:'Jordan',       from:2, to:2, date:'2026-03-08', reason:'Reissued with elevated caution. Protest activity, border region risk.' },
+  { country:'Ecuador',      from:2, to:3, date:'2025-01-15', reason:'Gang violence surge, state of emergency.' },
+  { country:'Haiti',        from:3, to:4, date:'2024-03-01', reason:'Gang control of capital, government collapse.' },
+];
+
+const RISK_LABELS = {
+  T: { label:'Terrorism',         color:'#c84b4b' },
+  C: { label:'Crime',             color:'#c8a84b' },
+  U: { label:'Civil Unrest',      color:'#e07020' },
+  K: { label:'Kidnapping',        color:'#c84b4b' },
+  D: { label:'Wrongful Detention',color:'#9b59b6' },
+  H: { label:'Health',            color:'#4b7fc8' },
+  N: { label:'Natural Disaster',  color:'#4bc87a' },
+  E: { label:'Entry/Exit Issues', color:'#7a8099' },
+  O: { label:'Other',             color:'#7a8099' },
+};
+
+const LEVEL_CONFIG = {
+  1: { color:'var(--green)',  label:'L1 Normal',         bg:'rgba(75,200,122,0.08)',  border:'rgba(75,200,122,0.3)'  },
+  2: { color:'var(--yellow)', label:'L2 Caution',        bg:'rgba(200,168,75,0.08)', border:'rgba(200,168,75,0.3)'  },
+  3: { color:'#e07020',       label:'L3 Reconsider',     bg:'rgba(224,112,32,0.08)', border:'rgba(224,112,32,0.3)'  },
+  4: { color:'var(--red)',    label:'L4 Do Not Travel',  bg:'rgba(200,75,75,0.1)',   border:'rgba(200,75,75,0.4)'  },
+};
+
+const TREND_CONFIG = {
+  stable:   { icon:'→', color:'var(--text-dim)' },
+  worsening:{ icon:'▲', color:'var(--red)'      },
+  improving:{ icon:'▼', color:'var(--green)'    },
+};
+
+let currentTravelLevel = 'all';
+
+function filterTravel(level) {
+  if (level !== undefined) {
+    currentTravelLevel = level;
+    document.querySelectorAll('.travel-filter-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.lv === level)
+    );
+  }
+  const search = (document.getElementById('travel-search')?.value || '').toLowerCase();
+  const region = document.getElementById('travel-region')?.value || 'all';
+  const sort   = document.getElementById('travel-sort')?.value || 'level-desc';
+
+  let filtered = TRAVEL_ADVISORIES.filter(a => {
+    if (currentTravelLevel !== 'all' && a.level !== +currentTravelLevel) return false;
+    if (region !== 'all' && a.region !== region) return false;
+    if (search && !a.country.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (sort === 'level-desc') return b.level - a.level || a.country.localeCompare(b.country);
+    if (sort === 'level-asc')  return a.level - b.level || a.country.localeCompare(b.country);
+    if (sort === 'alpha')      return a.country.localeCompare(b.country);
+    if (sort === 'region')     return a.region.localeCompare(b.region) || b.level - a.level;
+    return 0;
+  });
+
+  const countEl = document.getElementById('travel-count');
+  if (countEl) countEl.textContent = 'Showing ' + filtered.length + ' of ' + TRAVEL_ADVISORIES.length + ' countries';
+
+  const grid = document.getElementById('travel-grid');
+  if (!grid) return;
+
+  grid.innerHTML = filtered.map(a => {
+    const lc = LEVEL_CONFIG[a.level];
+    const tr = TREND_CONFIG[a.trend] || TREND_CONFIG.stable;
+    const riskTags = a.risks.map(r => {
+      const rl = RISK_LABELS[r] || { label:r, color:'#7a8099' };
+      return '<span style="font-family:var(--font-mono);font-size:0.58rem;padding:1px 5px;border-radius:2px;border:1px solid ' + rl.color + '33;color:' + rl.color + ';background:' + rl.color + '15">' + rl.label + '</span>';
+    }).join('');
+
+    return '<div style="background:' + lc.bg + ';border:1px solid ' + lc.border + ';border-left:3px solid ' + lc.color + ';border-radius:4px;padding:11px 13px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+        '<div style="font-weight:700;font-size:0.85rem;color:var(--text-hi)">' + a.country + '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<span style="font-family:var(--font-mono);font-size:0.72rem;color:' + tr.color + '">' + tr.icon + '</span>' +
+          '<span style="font-family:var(--font-mono);font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:2px;color:' + lc.color + ';border:1px solid ' + lc.border + '">' + lc.label + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-bottom:6px">' + a.region + ' · Updated ' + a.changed + '</div>' +
+      (riskTags ? '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:7px">' + riskTags + '</div>' : '') +
+      '<div style="font-size:0.72rem;color:var(--text-dim);line-height:1.4">' + a.notes + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderTravelChanges() {
+  const el = document.getElementById('travel-changes');
+  if (!el) return;
+  el.innerHTML = RECENT_CHANGES.map(c => {
+    const fromCfg = LEVEL_CONFIG[c.from];
+    const toCfg   = LEVEL_CONFIG[c.to];
+    const arrow = c.to > c.from ? '▲' : c.to < c.from ? '▼' : '↻';
+    const arrowColor = c.to > c.from ? 'var(--red)' : c.to < c.from ? 'var(--green)' : 'var(--text-dim)';
+    return '<div style="display:grid;grid-template-columns:160px auto 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<div style="font-weight:600;font-size:0.83rem;color:var(--text-hi)">' + c.country + '</div>' +
+      '<div style="display:flex;align-items:center;gap:6px;white-space:nowrap">' +
+        '<span style="font-family:var(--font-mono);font-size:0.68rem;color:' + fromCfg.color + '">L' + c.from + '</span>' +
+        '<span style="color:' + arrowColor + ';font-size:0.8rem">' + arrow + '</span>' +
+        '<span style="font-family:var(--font-mono);font-size:0.68rem;color:' + toCfg.color + '">L' + c.to + '</span>' +
+        '<span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-left:4px">' + c.date + '</span>' +
+      '</div>' +
+      '<div style="font-size:0.73rem;color:var(--text-dim);line-height:1.4">' + c.reason + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Update summary counts
+function updateTravelCounts() {
+  [1,2,3,4].forEach(l => {
+    const el = document.getElementById('count-l' + l);
+    if (el) el.textContent = TRAVEL_ADVISORIES.filter(a => a.level === l).length;
+  });
+}
+
+document.querySelector('[data-tab="travel"]').addEventListener('click', () => {
+  setTimeout(() => {
+    updateTravelCounts();
+    filterTravel();
+    renderTravelChanges();
+  }, 50);
+});
+</script>
+
+<style>
+.travel-filter-btn {
+  font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 3px; background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.travel-filter-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.travel-filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,75,0.08); }
+</style>
 
 </body>
 </html>
