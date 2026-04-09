@@ -566,6 +566,7 @@
   <div class="tab" data-tab="words">Political Language</div>
   <div class="tab" data-tab="econ">Economic Signals</div>
   <div class="tab" data-tab="travel">Travel Advisories</div>
+  <div class="tab" data-tab="timeline">Conflict Timeline</div>
   <div class="tab" data-tab="settings">Settings</div>
 </div>
 
@@ -1138,6 +1139,67 @@
     <div class="card">
       <div class="card-header">Upgrades / Downgrades — 2026 <span class="badge">ANALYST TRACKED</span></div>
       <div id="travel-changes"></div>
+    </div>
+
+  </div>
+
+
+  <!-- TAB: CONFLICT TIMELINE -->
+  <div class="panel" id="panel-timeline">
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="timeline-region-filters">
+        <button class="tl-filter active" data-region="all" onclick="filterTimeline('all')">All Regions</button>
+        <button class="tl-filter" data-region="ME" onclick="filterTimeline('ME')">Middle East</button>
+        <button class="tl-filter" data-region="EU" onclick="filterTimeline('EU')">Europe / Ukraine</button>
+        <button class="tl-filter" data-region="AS" onclick="filterTimeline('AS')">Asia-Pacific</button>
+        <button class="tl-filter" data-region="AF" onclick="filterTimeline('AF')">Africa</button>
+        <button class="tl-filter" data-region="LA" onclick="filterTimeline('LA')">Latin America</button>
+        <button class="tl-filter" data-region="GL" onclick="filterTimeline('GL')">Global</button>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="openAddEventModal()" style="font-size:0.75rem;padding:5px 12px">+ Add Event</button>
+        <button class="btn btn-ghost" onclick="exportTimeline()" style="font-size:0.75rem;padding:5px 12px">Export</button>
+      </div>
+    </div>
+
+    <!-- Horizontal scrolling timeline -->
+    <div style="position:relative;margin-bottom:24px">
+      <!-- Scroll hint -->
+      <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.08em">
+        SCROLL HORIZONTALLY TO NAVIGATE TIMELINE &rarr;
+      </div>
+
+      <div id="timeline-scroll-wrap" style="overflow-x:auto;overflow-y:visible;padding-bottom:16px;cursor:grab;user-select:none">
+        <div id="timeline-track" style="position:relative;min-width:max-content;padding:0 40px">
+
+          <!-- Year markers rendered by JS -->
+          <div id="timeline-years" style="display:flex;align-items:flex-end;height:28px;margin-bottom:0;position:relative"></div>
+
+          <!-- The spine line -->
+          <div id="timeline-spine" style="height:3px;background:linear-gradient(to right,transparent,var(--accent) 5%,var(--accent) 95%,transparent);margin:0;position:relative"></div>
+
+          <!-- Event cards above and below the spine -->
+          <div id="timeline-events-above" style="display:flex;align-items:flex-end;min-height:280px;position:relative;padding-bottom:12px"></div>
+          <div id="timeline-events-below" style="display:flex;align-items:flex-start;min-height:280px;position:relative;padding-top:12px"></div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected event detail -->
+    <div id="timeline-detail" style="display:none;margin-bottom:20px">
+      <div class="card" id="timeline-detail-card"></div>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;font-family:var(--font-mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:16px">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-right:4px"></span>Armed Conflict</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--yellow);margin-right:4px"></span>Political / Diplomatic</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent2);margin-right:4px"></span>Military / Strategic</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin-right:4px"></span>Agreement / Resolution</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#9b59b6;margin-right:4px"></span>Nuclear / WMD</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7a8099;margin-right:4px"></span>Economic / Sanctions</span>
     </div>
 
   </div>
@@ -3371,6 +3433,302 @@ document.querySelector('[data-tab="travel"]').addEventListener('click', () => {
 }
 .travel-filter-btn:hover { color: var(--text); border-color: var(--text-dim); }
 .travel-filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,75,0.08); }
+</style>
+
+
+<!-- TIMELINE ADD EVENT MODAL -->
+<div class="modal-overlay" id="tl-modal">
+  <div class="modal" style="width:440px">
+    <h3>Add Timeline Event</h3>
+    <div class="form-row">
+      <label>Event Title</label>
+      <input type="text" id="tl-title" placeholder="e.g. Iran strikes US base in Iraq">
+    </div>
+    <div class="form-row">
+      <label>Date</label>
+      <input type="date" id="tl-date">
+    </div>
+    <div class="form-row">
+      <label>Region</label>
+      <select id="tl-region">
+        <option value="ME">Middle East</option>
+        <option value="EU">Europe / Ukraine</option>
+        <option value="AS">Asia-Pacific</option>
+        <option value="AF">Africa</option>
+        <option value="LA">Latin America</option>
+        <option value="GL">Global</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Event Type</label>
+      <select id="tl-type">
+        <option value="conflict">Armed Conflict</option>
+        <option value="political">Political / Diplomatic</option>
+        <option value="military">Military / Strategic</option>
+        <option value="resolution">Agreement / Resolution</option>
+        <option value="nuclear">Nuclear / WMD</option>
+        <option value="economic">Economic / Sanctions</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Analyst Note</label>
+      <textarea id="tl-note" style="height:80px" placeholder="What happened and why does it matter?"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('tl-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTimelineEvent()">Add to Timeline</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFLICT TIMELINE ──
+const TIMELINE_EVENTS = [
+  // GLOBAL
+  { id:1,  date:'2001-09-11', title:'9/11 Attacks', region:'GL', type:'conflict',   note:'Al-Qaeda attacks on US. 2,977 killed. Triggers Global War on Terror, Afghanistan invasion.' },
+  { id:2,  date:'2003-03-20', title:'Iraq War Begins', region:'ME', type:'conflict', note:'US-led coalition invades Iraq. Saddam Hussein ousted. No WMD found. Reshapes Middle East.' },
+  { id:3,  date:'2008-08-08', title:'Russia-Georgia War', region:'EU', type:'conflict', note:'Russia invades Georgia. South Ossetia and Abkhazia recognized. First Russian military action in Europe since Cold War.' },
+  { id:4,  date:'2010-12-17', title:'Arab Spring Begins', region:'ME', type:'political', note:'Mohamed Bouazizi self-immolation triggers wave of uprisings across Arab world.' },
+  { id:5,  date:'2011-03-19', title:'Libya Intervention', region:'AF', type:'military', note:'NATO intervention against Gaddafi. Libya descends into civil war after his fall.' },
+  { id:6,  date:'2011-08-30', title:'Gaddafi Falls', region:'AF', type:'political', note:'Muammar Gaddafi killed in Sirte. Libya fractures into rival factions.' },
+  { id:7,  date:'2011-12-18', title:'US Withdraws from Iraq', region:'ME', type:'military', note:'Last US combat troops leave Iraq. Power vacuum contributes to ISIS rise.' },
+  { id:8,  date:'2013-06-19', title:'Snowden Leaks', region:'GL', type:'political', note:'NSA mass surveillance programs revealed. Global intelligence community reshapes.' },
+  { id:9,  date:'2014-02-22', title:'Ukraine Maidan Revolution', region:'EU', type:'political', note:'Yanukovych flees. Pro-Western government takes power. Russia responds.' },
+  { id:10, date:'2014-03-18', title:'Russia Annexes Crimea', region:'EU', type:'conflict', note:'Russia formally annexes Crimea after referendum. West imposes first major sanctions.' },
+  { id:11, date:'2014-06-29', title:'ISIS Declares Caliphate', region:'ME', type:'conflict', note:'Abu Bakr al-Baghdadi declares Islamic State caliphate spanning Iraq and Syria.' },
+  { id:12, date:'2015-07-14', title:'Iran Nuclear Deal (JCPOA)', region:'ME', type:'resolution', note:'P5+1 agreement limits Iran enrichment in exchange for sanctions relief. Historic diplomatic achievement.' },
+  { id:13, date:'2015-09-30', title:'Russia Enters Syria', region:'ME', type:'military', note:'Russian airstrikes begin in Syria. Shifts conflict dynamics, props up Assad.' },
+  { id:14, date:'2016-06-23', title:'Brexit Vote', region:'EU', type:'political', note:'UK votes 52% to leave EU. Triggers years of political crisis and negotiation.' },
+  { id:15, date:'2017-10-17', title:'ISIS Caliphate Falls', region:'ME', type:'resolution', note:'Raqqa liberated. ISIS loses territorial caliphate though insurgency continues.' },
+  { id:16, date:'2018-05-08', title:'US Withdraws from JCPOA', region:'ME', type:'political', note:'Trump pulls US from Iran nuclear deal. Maximum pressure campaign begins. Iran restarts enrichment.' },
+  { id:17, date:'2019-09-14', title:'Abqaiq Attack', region:'ME', type:'conflict', note:'Drone/missile attack on Saudi Aramco facility. 5% of global oil supply disrupted. Attributed to Iran.' },
+  { id:18, date:'2019-10-27', title:'al-Baghdadi Killed', region:'ME', type:'military', note:'ISIS leader Abu Bakr al-Baghdadi killed in US Special Operations raid in Syria.' },
+  { id:19, date:'2020-01-03', title:'Soleimani Killed', region:'ME', type:'military', note:'IRGC Quds Force commander Qasem Soleimani killed by US drone strike in Baghdad. Iran vows revenge.' },
+  { id:20, date:'2020-09-15', title:'Abraham Accords', region:'ME', type:'resolution', note:'UAE and Bahrain normalize relations with Israel. Morocco and Sudan follow. Saudi Arabia does not join.' },
+  { id:21, date:'2021-08-15', title:'Kabul Falls to Taliban', region:'AS', type:'conflict', note:'Taliban seize Kabul. US-backed government collapses. 20-year NATO mission ends in defeat.' },
+  { id:22, date:'2021-10-01', title:'AUKUS Announced', region:'AS', type:'military', note:'US-UK-Australia submarine pact. France excluded, furious. China alarmed.' },
+  { id:23, date:'2022-02-24', title:'Russia Invades Ukraine', region:'EU', type:'conflict', note:'Full-scale Russian invasion begins. Largest European war since WWII. West imposes sweeping sanctions.' },
+  { id:24, date:'2022-03-16', title:'SWIFT Sanctions on Russia', region:'EU', type:'economic', note:'Russia cut off from SWIFT. Central bank reserves frozen. Ruble collapses.' },
+  { id:25, date:'2022-09-26', title:'Nord Stream Sabotage', region:'EU', type:'conflict', note:'Nord Stream 1 and 2 pipelines destroyed by underwater explosions. Attribution disputed.' },
+  { id:26, date:'2022-10-08', title:'Kerch Bridge Attack', region:'EU', type:'conflict', note:'Ukrainian truck bomb damages Crimea bridge. Russia responds with mass missile strikes on Kyiv.' },
+  { id:27, date:'2023-04-15', title:'Sudan Civil War Erupts', region:'AF', type:'conflict', note:'SAF vs RSF fighting breaks out in Khartoum. Rapidly becomes one of world\'s worst humanitarian crises.' },
+  { id:28, date:'2023-06-23', title:'Wagner Mutiny', region:'EU', type:'political', note:'Prigozhin leads Wagner Group march on Moscow. Backed down after Belarus deal. Prigozhin dies 2 months later.' },
+  { id:29, date:'2023-10-07', title:'Hamas October 7 Attack', region:'ME', type:'conflict', note:'Hamas breaches Gaza fence. 1,200 Israelis killed, 251 taken hostage. Largest attack on Jews since Holocaust.' },
+  { id:30, date:'2023-10-08', title:'Israel Declares War on Hamas', region:'ME', type:'conflict', note:'Israel launches Operation Swords of Iron. Ground invasion of Gaza begins October 27.' },
+  { id:31, date:'2023-11-19', title:'Houthi Attacks Begin', region:'ME', type:'conflict', note:'Houthis begin attacking commercial shipping in Red Sea in solidarity with Gaza. Global supply chains disrupted.' },
+  { id:32, date:'2024-01-28', title:'US Strikes Kataib Hezbollah', region:'ME', type:'military', note:'US retaliates for Tower 22 attack killing 3 US soldiers. 85+ targets struck in Iraq and Syria.' },
+  { id:33, date:'2024-04-01', title:'Iran Consulate Strike', region:'ME', type:'military', note:'Israel strikes Iranian consulate in Damascus. 7 IRGC officers killed including Zahedi. Crosses red line.' },
+  { id:34, date:'2024-04-13', title:'Iran Attacks Israel Directly', region:'ME', type:'conflict', note:'Iran fires 300+ drones and missiles at Israel. First ever direct attack. 99% intercepted by coalition.' },
+  { id:35, date:'2024-04-19', title:'Israel Strikes Iran', region:'ME', type:'military', note:'Israel retaliates with strike on Isfahan. Signals ability to penetrate Iranian air defenses.' },
+  { id:36, date:'2024-07-31', title:'Haniyeh Killed in Tehran', region:'ME', type:'military', note:'Hamas political chief Ismail Haniyeh assassinated in Tehran. Israel blamed. Escalation fears spike.' },
+  { id:37, date:'2024-09-17', title:'Hezbollah Pager Attacks', region:'ME', type:'military', note:'Thousands of Hezbollah pagers explode simultaneously. Israeli operation. Nasrallah killed weeks later.' },
+  { id:38, date:'2024-09-27', title:'Nasrallah Killed', region:'ME', type:'military', note:'Hezbollah Secretary-General Hassan Nasrallah killed in Israeli airstrike on Beirut. Seismic regional shift.' },
+  { id:39, date:'2024-11-26', title:'Lebanon Ceasefire', region:'ME', type:'resolution', note:'60-day ceasefire agreement between Israel and Hezbollah brokered by US and France.' },
+  { id:40, date:'2024-12-08', title:'Assad Falls', region:'ME', type:'political', note:'Hayat Tahrir al-Sham offensive topples Assad in 12 days. Flees to Russia. 54 years of Assad rule ends.' },
+  { id:41, date:'2025-01-15', title:'Gaza Ceasefire Phase 1', region:'ME', type:'resolution', note:'Phase 1 ceasefire agreement reached. Hostage releases begin. Fragile — implementation contested.' },
+  { id:42, date:'2025-01-20', title:'Trump Takes Office', region:'GL', type:'political', note:'Trump begins second term. Immediate executive orders on border, Paris accord, WHO withdrawal.' },
+  { id:43, date:'2025-02-28', title:'US-Iran Hostilities Begin', region:'ME', type:'conflict', note:'Operation Epic Fury launched. US strikes on Iranian nuclear and military facilities. Iran retaliates.' },
+  { id:44, date:'2025-03-02', title:'Bahrain Evacuation Order', region:'ME', type:'military', note:'State Dept orders non-emergency US personnel to leave Bahrain. Gulf states upgraded to Level 3-4.' },
+  { id:45, date:'2025-03-22', title:'Worldwide Caution Issued', region:'GL', type:'political', note:'State Dept issues Worldwide Caution alert. Americans globally advised to exercise increased vigilance.' },
+  { id:46, date:'2026-04-08', title:'TODAY', region:'GL', type:'political', note:'Current situation. Iran-US hostilities ongoing. Ukraine war continues. Gaza fragile ceasefire.' },
+];
+
+const TYPE_COLORS = {
+  conflict:   '#c84b4b',
+  political:  '#c8a84b',
+  military:   '#4b7fc8',
+  resolution: '#4bc87a',
+  nuclear:    '#9b59b6',
+  economic:   '#7a8099',
+};
+
+const REGION_LABELS = { ME:'Middle East', EU:'Europe', AS:'Asia-Pacific', AF:'Africa', LA:'Latin America', GL:'Global' };
+
+let tlFilter = 'all';
+let tlCustom = LSGet('tl_custom', []);
+let tlSelected = null;
+
+function filterTimeline(region) {
+  tlFilter = region;
+  document.querySelectorAll('.tl-filter').forEach(b => b.classList.toggle('active', b.dataset.region === region));
+  renderTimeline();
+}
+
+function getAllEvents() {
+  return [...TIMELINE_EVENTS, ...tlCustom].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function renderTimeline() {
+  const all = getAllEvents().filter(e => tlFilter === 'all' || e.region === tlFilter);
+  if (!all.length) return;
+
+  const startYear = 2001;
+  const endYear = 2027;
+  const YEAR_W = 220; // px per year
+  const totalW = (endYear - startYear) * YEAR_W;
+
+  // Year markers
+  const yearsEl = document.getElementById('timeline-years');
+  yearsEl.style.width = totalW + 'px';
+  let yearsHtml = '';
+  for (let y = startYear; y <= endYear; y++) {
+    const x = (y - startYear) * YEAR_W;
+    yearsHtml += '<div style="position:absolute;left:' + x + 'px;display:flex;flex-direction:column;align-items:center">' +
+      '<span style="font-family:var(--font-mono);font-size:0.68rem;color:' + (y % 5 === 0 ? 'var(--accent)' : 'var(--text-dim)') + ';font-weight:' + (y % 5 === 0 ? '600' : '400') + '">' + y + '</span>' +
+      '<div style="width:1px;height:' + (y % 5 === 0 ? '10' : '6') + 'px;background:' + (y % 5 === 0 ? 'var(--accent)' : 'var(--border)') + ';margin-top:2px"></div>' +
+    '</div>';
+  }
+  yearsEl.innerHTML = yearsHtml;
+
+  // Split events alternating above/below
+  const aboveEl = document.getElementById('timeline-events-above');
+  const belowEl = document.getElementById('timeline-events-below');
+  aboveEl.style.width = totalW + 'px';
+  belowEl.style.width = totalW + 'px';
+  aboveEl.innerHTML = '';
+  belowEl.innerHTML = '';
+
+  all.forEach((ev, i) => {
+    const evDate = new Date(ev.date);
+    const yearFrac = (evDate.getFullYear() - startYear) + (evDate.getMonth() / 12);
+    const x = yearFrac * YEAR_W;
+    const color = TYPE_COLORS[ev.type] || '#7a8099';
+    const isAbove = i % 2 === 0;
+    const isSelected = tlSelected === ev.id;
+
+    const card = '<div onclick="selectTlEvent(' + ev.id + ')" style="position:absolute;left:' + Math.round(x) + 'px;' +
+      (isAbove ? 'bottom:12px' : 'top:12px') + ';width:180px;cursor:pointer;transform:translateX(-50%)">' +
+      // Connector line
+      '<div style="position:absolute;' + (isAbove ? 'bottom:-12px' : 'top:-12px') + ';left:50%;width:1px;height:12px;background:' + color + ';opacity:0.5"></div>' +
+      // Dot on spine
+      '<div style="position:absolute;' + (isAbove ? 'bottom:-16px' : 'top:-16px') + ';left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:' + color + ';border:2px solid var(--bg2);z-index:5"></div>' +
+      // Card
+      '<div style="background:var(--bg2);border:1px solid ' + (isSelected ? color : 'var(--border)') + ';border-left:3px solid ' + color + ';border-radius:3px;padding:7px 9px;transition:border-color 0.15s;' + (isSelected ? 'box-shadow:0 0 0 1px ' + color + '33' : '') + '">' +
+        '<div style="font-family:var(--font-mono);font-size:0.58rem;color:' + color + ';margin-bottom:3px">' + ev.date.slice(0,7) + ' · ' + (REGION_LABELS[ev.region] || ev.region) + '</div>' +
+        '<div style="font-size:0.78rem;font-weight:600;color:var(--text-hi);line-height:1.3">' + ev.title + '</div>' +
+        (ev.custom ? '<button onclick="deleteTlEvent(' + ev.id + ');event.stopPropagation()" style="position:absolute;top:3px;right:5px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.62rem">x</button>' : '') +
+      '</div>' +
+    '</div>';
+
+    if (isAbove) aboveEl.innerHTML += card;
+    else belowEl.innerHTML += card;
+  });
+
+  // Spine width
+  document.getElementById('timeline-spine').style.width = totalW + 'px';
+}
+
+function selectTlEvent(id) {
+  tlSelected = tlSelected === id ? null : id;
+  const ev = getAllEvents().find(e => e.id === id);
+  const detailEl = document.getElementById('timeline-detail');
+  const detailCard = document.getElementById('timeline-detail-card');
+
+  if (!ev || !tlSelected) {
+    detailEl.style.display = 'none';
+    renderTimeline();
+    return;
+  }
+
+  const color = TYPE_COLORS[ev.type] || '#7a8099';
+  detailCard.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">' +
+      '<div>' +
+        '<div style="font-family:var(--font-mono);font-size:0.65rem;color:' + color + ';margin-bottom:4px">' +
+          ev.date + ' · ' + (REGION_LABELS[ev.region] || ev.region) + ' · ' + ev.type.toUpperCase() +
+        '</div>' +
+        '<div style="font-size:1.05rem;font-weight:700;color:var(--text-hi)">' + ev.title + '</div>' +
+      '</div>' +
+      '<div style="width:12px;height:12px;border-radius:50%;background:' + color + ';flex-shrink:0;margin-top:4px"></div>' +
+    '</div>' +
+    '<div style="font-size:0.85rem;color:var(--text-dim);line-height:1.6">' + ev.note + '</div>';
+
+  detailEl.style.display = 'block';
+  renderTimeline();
+}
+
+function openAddEventModal() {
+  document.getElementById('tl-title').value = '';
+  document.getElementById('tl-date').value = '';
+  document.getElementById('tl-region').value = 'ME';
+  document.getElementById('tl-type').value = 'conflict';
+  document.getElementById('tl-note').value = '';
+  document.getElementById('tl-modal').classList.add('open');
+}
+
+function saveTimelineEvent() {
+  const title = document.getElementById('tl-title').value.trim();
+  const date  = document.getElementById('tl-date').value;
+  if (!title || !date) { alert('Title and date are required.'); return; }
+  const maxId = Math.max(0, ...getAllEvents().map(e => e.id));
+  tlCustom.push({
+    id: maxId + 1,
+    title, date,
+    region: document.getElementById('tl-region').value,
+    type:   document.getElementById('tl-type').value,
+    note:   document.getElementById('tl-note').value,
+    custom: true
+  });
+  LSSet('tl_custom', tlCustom);
+  closeModal('tl-modal');
+  renderTimeline();
+}
+
+function deleteTlEvent(id) {
+  tlCustom = tlCustom.filter(e => e.id !== id);
+  LSSet('tl_custom', tlCustom);
+  if (tlSelected === id) { tlSelected = null; document.getElementById('timeline-detail').style.display = 'none'; }
+  renderTimeline();
+}
+
+function exportTimeline() {
+  const blob = new Blob([JSON.stringify(tlCustom, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'glassball_timeline_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+// Drag to scroll
+(function() {
+  const wrap = document.getElementById('timeline-scroll-wrap');
+  if (!wrap) return;
+  let isDown = false, startX, scrollLeft;
+  wrap.addEventListener('mousedown', e => {
+    isDown = true; wrap.style.cursor = 'grabbing';
+    startX = e.pageX - wrap.offsetLeft;
+    scrollLeft = wrap.scrollLeft;
+  });
+  wrap.addEventListener('mouseleave', () => { isDown = false; wrap.style.cursor = 'grab'; });
+  wrap.addEventListener('mouseup', () => { isDown = false; wrap.style.cursor = 'grab'; });
+  wrap.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - wrap.offsetLeft;
+    wrap.scrollLeft = scrollLeft - (x - startX) * 1.5;
+  });
+})();
+
+document.querySelector('[data-tab="timeline"]').addEventListener('click', () => {
+  setTimeout(() => {
+    renderTimeline();
+    // Scroll to ~2022 by default
+    const wrap = document.getElementById('timeline-scroll-wrap');
+    if (wrap) wrap.scrollLeft = (2020 - 2001) * 220;
+  }, 60);
+});
+</script>
+
+<style>
+.tl-filter {
+  font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 3px; background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.tl-filter:hover { color: var(--text); border-color: var(--text-dim); }
+.tl-filter.active { border-color: var(--accent); color: var(--accent); background: rgba(200,168,75,0.08); }
 </style>
 
 </body>
