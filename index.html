@@ -639,7 +639,7 @@
   <div class="panel" id="panel-livecams">
 
     <div class="api-note" style="margin-bottom:16px">
-      <strong>Note:</strong> Browser security (X-Frame-Options) prevents live video from being embedded from most news sites. The map and tracking tools below embed directly. All news/government streams open in a new tab — use them alongside this dashboard.
+      <strong>Note:</strong> Browser security (X-Frame-Options) prevents live video from being embedded from most news sites. The map and tracking tools below embed directly. All news/government streams open in a new tab — use them alongside this dashboard. <strong>MarineTraffic tip:</strong> Each map loads all vessel types — use the ship type filter panel on the right side of each map to filter by tankers, cargo, military, or any other category.
     </div>
 
     <!-- LIVE MAP TOOLS — these actually embed -->
@@ -647,26 +647,29 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
 
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="card-header" style="padding:10px 14px;border-radius:0">MarineTraffic — All Vessels (Hormuz)</div>
+        <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
+          MarineTraffic — Strait of Hormuz
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 7</span>
+        </div>
         <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:7/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
         <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
-          MarineTraffic — Tankers Only
-          <span style="font-family:var(--font-mono);font-size:0.6rem;padding:1px 6px;border-radius:2px;background:rgba(200,75,75,0.15);color:var(--red);border:1px solid rgba(200,75,75,0.3)">TANKERS</span>
+          MarineTraffic — Panama Canal
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 9</span>
         </div>
-        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:8/showmenu:/remember:false"
+        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:9/centery:9.08/centerx:-79.68/maptype:0/shownames:true/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
         <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
-          MarineTraffic — Cargo Only
-          <span style="font-family:var(--font-mono);font-size:0.6rem;padding:1px 6px;border-radius:2px;background:rgba(200,168,75,0.15);color:var(--yellow);border:1px solid rgba(200,168,75,0.3)">CARGO</span>
+          MarineTraffic — Red Sea / Bab el-Mandeb
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 6</span>
         </div>
-        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:7/showmenu:/remember:false"
+        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:13/centerx:43/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
@@ -686,8 +689,29 @@
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Wind / Weather</div>
+        <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
+          ADS-B Exchange — United States
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">CONUS</span>
+        </div>
+        <iframe src="https://globe.adsbexchange.com/?lat=38&lon=-97&zoom=4"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Wind</div>
         <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=wind&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Temperature</div>
+        <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=temp&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Satellite</div>
+        <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=satellite&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
@@ -1804,7 +1828,7 @@ l>
   <div class="panel" id="panel-livecams">
 
     <div class="api-note" style="margin-bottom:16px">
-      <strong>Note:</strong> Browser security (X-Frame-Options) prevents live video from being embedded from most news sites. The map and tracking tools below embed directly. All news/government streams open in a new tab — use them alongside this dashboard.
+      <strong>Note:</strong> Browser security (X-Frame-Options) prevents live video from being embedded from most news sites. The map and tracking tools below embed directly. All news/government streams open in a new tab — use them alongside this dashboard. <strong>MarineTraffic tip:</strong> Each map loads all vessel types — use the ship type filter panel on the right side of each map to filter by tankers, cargo, military, or any other category.
     </div>
 
     <!-- LIVE MAP TOOLS — these actually embed -->
@@ -1812,26 +1836,29 @@ l>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
 
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="card-header" style="padding:10px 14px;border-radius:0">MarineTraffic — All Vessels (Hormuz)</div>
+        <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
+          MarineTraffic — Strait of Hormuz
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 7</span>
+        </div>
         <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:7/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
         <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
-          MarineTraffic — Tankers Only
-          <span style="font-family:var(--font-mono);font-size:0.6rem;padding:1px 6px;border-radius:2px;background:rgba(200,75,75,0.15);color:var(--red);border:1px solid rgba(200,75,75,0.3)">TANKERS</span>
+          MarineTraffic — Panama Canal
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 9</span>
         </div>
-        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:8/showmenu:/remember:false"
+        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:9/centery:9.08/centerx:-79.68/maptype:0/shownames:true/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
         <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
-          MarineTraffic — Cargo Only
-          <span style="font-family:var(--font-mono);font-size:0.6rem;padding:1px 6px;border-radius:2px;background:rgba(200,168,75,0.15);color:var(--yellow);border:1px solid rgba(200,168,75,0.3)">CARGO</span>
+          MarineTraffic — Red Sea / Bab el-Mandeb
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">zoom 6</span>
         </div>
-        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:26/centerx:56/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:7/showmenu:/remember:false"
+        <iframe src="https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:13/centerx:43/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
@@ -1851,8 +1878,29 @@ l>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden">
-        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Wind / Weather</div>
+        <div class="card-header" style="padding:10px 14px;border-radius:0;display:flex;justify-content:space-between;align-items:center">
+          ADS-B Exchange — United States
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--text-dim)">CONUS</span>
+        </div>
+        <iframe src="https://globe.adsbexchange.com/?lat=38&lon=-97&zoom=4"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Wind</div>
         <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=wind&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Temperature</div>
+        <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=temp&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
+          style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="card-header" style="padding:10px 14px;border-radius:0">Windy — Satellite</div>
+        <iframe src="https://embed.windy.com/embed2.html?lat=28&lon=50&zoom=5&level=surface&overlay=satellite&menu=&message=&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1"
           style="width:100%;height:320px;border:none;display:block" loading="lazy"></iframe>
       </div>
 
